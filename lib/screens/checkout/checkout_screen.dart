@@ -5,7 +5,8 @@ import '../../core/theme/app_colors.dart';
 import '../../models/order_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
-import '../../services/mock_data_service.dart';
+import '../../providers/address_provider.dart';
+import '../../models/address_model.dart';
 import '../../widgets/custom_button.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
@@ -16,7 +17,6 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   int _selectedPayment = 0;
-  int _selectedAddress = 0;
   bool _isPlacing = false;
 
   final _paymentMethods = [
@@ -35,7 +35,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       price: item.food.price, quantity: item.quantity, totalPrice: item.itemPrice,
     )).toList();
 
-    final address = MockData.addresses[_selectedAddress];
+    final address = ref.read(addressProvider.notifier).defaultAddress;
+    if (address == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a delivery address')));
+      return;
+    }
 
     await ref.read(orderProvider.notifier).placeOrder(
       items: items, subtotal: cart.subtotal, gst: cart.gst, deliveryFee: cart.deliveryFee,
@@ -61,28 +65,81 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       appBar: AppBar(title: const Text('Checkout')),
       body: SingleChildScrollView(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Delivery Address
-        Text('Delivery Address', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
-        const SizedBox(height: 14),
-        ...List.generate(MockData.addresses.length, (i) {
-          final addr = MockData.addresses[i];
-          final selected = i == _selectedAddress;
-          return GestureDetector(onTap: () => setState(() => _selectedAddress = i),
-            child: Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: selected ? AppColors.primary : Colors.transparent, width: 2),
-                boxShadow: isDark ? null : AppColors.cardShadow),
-              child: Row(children: [
-                Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(addr.label == 'Home' ? Icons.home : addr.label == 'Office' ? Icons.work : Icons.location_on, color: AppColors.primary, size: 22)),
-                const SizedBox(width: 14),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(addr.label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textColor)),
-                  const SizedBox(height: 3),
-                  Text(addr.fullAddress, style: TextStyle(fontSize: 13, color: subColor)),
-                ])),
-                if (selected) const Icon(Icons.check_circle, color: AppColors.primary, size: 24),
-              ])));
-        }),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Delivery Address', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
+            TextButton(
+              onPressed: () => context.push('/manage-addresses'),
+              child: const Text('Change', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Builder(
+          builder: (context) {
+            final address = ref.watch(addressProvider.notifier).defaultAddress;
+            if (address == null) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.location_off, color: AppColors.error, size: 32),
+                    const SizedBox(height: 12),
+                    const Text('No Address Selected', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.error)),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => context.push('/manage-addresses'),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                      child: const Text('Add Address'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary, width: 2),
+                boxShadow: isDark ? null : AppColors.cardShadow,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                    child: Icon(
+                      address.addressType.toLowerCase() == 'home' ? Icons.home : 
+                      address.addressType.toLowerCase() == 'work' ? Icons.work : Icons.location_on, 
+                      color: AppColors.primary, size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(address.addressType, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textColor)),
+                        const SizedBox(height: 3),
+                        Text(address.fullAddress, style: TextStyle(fontSize: 13, color: subColor)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.check_circle, color: AppColors.primary, size: 24),
+                ],
+              ),
+            );
+          },
+        ),
 
         const SizedBox(height: 24),
 

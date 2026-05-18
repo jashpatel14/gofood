@@ -398,31 +398,7 @@ class MockData {
     },
   ];
 
-  // ── Addresses ─────────────────────────────────────────
-  static const List<AddressModel> addresses = [
-    AddressModel(
-      id: '1',
-      label: 'Home',
-      fullAddress: '221B Baker Street, Koramangala',
-      city: 'Bangalore',
-      pincode: '560034',
-      isDefault: true,
-    ),
-    AddressModel(
-      id: '2',
-      label: 'Office',
-      fullAddress: '42 Tech Park, Electronic City Phase 1',
-      city: 'Bangalore',
-      pincode: '560100',
-    ),
-    AddressModel(
-      id: '3',
-      label: 'Other',
-      fullAddress: '7th Cross, Indiranagar',
-      city: 'Bangalore',
-      pincode: '560038',
-    ),
-  ];
+  static const List<AddressModel> addresses = [];
 
   // ── Coupon Codes ──────────────────────────────────────
   static const Map<String, double> coupons = {

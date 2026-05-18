@@ -12,6 +12,9 @@ import '../screens/order/order_tracking_screen.dart';
 import '../screens/restaurant/restaurant_details_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/splash/splash_screen.dart';
+import '../screens/address/manage_address_screen.dart';
+import '../screens/address/add_address_screen.dart';
+import '../models/address_model.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -96,6 +99,19 @@ class AppRouter {
         path: '/search',
         name: 'search',
         builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/manage-addresses',
+        name: 'manage-addresses',
+        builder: (context, state) => const ManageAddressScreen(),
+      ),
+      GoRoute(
+        path: '/add-address',
+        name: 'add-address',
+        builder: (context, state) {
+          final address = state.extra as AddressModel?;
+          return AddAddressScreen(addressToEdit: address);
+        },
       ),
     ],
   );

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/food_provider.dart';
 import '../../providers/restaurant_provider.dart';
+import '../../providers/address_provider.dart';
 import '../../services/mock_data_service.dart';
 import '../../widgets/network_image_widget.dart';
 import '../../widgets/status_badge.dart';
@@ -24,6 +25,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final restaurantsAsync = ref.watch(restaurantListProvider);
     final popularFoodsAsync = ref.watch(popularFoodsProvider);
+    final defaultAddress = ref.watch(addressProvider.notifier).defaultAddress;
     final cardColor = isDark ? AppColors.darkCard : AppColors.surface;
     final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final subColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
@@ -38,16 +40,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Deliver To', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: subColor)),
-                  const SizedBox(height: 4),
-                  Row(children: [
-                    const Icon(Icons.location_on, color: AppColors.primary, size: 20),
-                    const SizedBox(width: 4),
-                    Text('Koramangala, Bangalore', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: textColor)),
-                    Icon(Icons.keyboard_arrow_down, color: subColor, size: 22),
+                Expanded(child: GestureDetector(
+                  onTap: () => context.push('/manage-addresses'),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Deliver To', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: subColor)),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      const Icon(Icons.location_on, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          defaultAddress != null ? '${defaultAddress.addressType} - ${defaultAddress.city}' : 'Select Delivery Address', 
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: textColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Icon(Icons.keyboard_arrow_down, color: subColor, size: 22),
+                    ]),
                   ]),
-                ])),
+                )),
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(14), boxShadow: isDark ? null : AppColors.cardShadow),

@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const foodRoutes = require('./routes/foods');
 const orderRoutes = require('./routes/orders');
+const addressRoutes = require('./routes/addresses');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/foods', foodRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/addresses', addressRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

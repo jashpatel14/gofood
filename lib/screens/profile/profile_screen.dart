@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/address_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -47,14 +48,14 @@ class ProfileScreen extends ConsumerWidget {
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
               _stat('Favorites', '0', textColor, subColor),
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
-              _stat('Addresses', '0', textColor, subColor),
+              _stat('Addresses', '${ref.watch(addressProvider).length}', textColor, subColor),
             ])),
 
           const SizedBox(height: 24),
 
           // Settings
           _tile(Icons.person_outline, 'Edit Profile', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
-          _tile(Icons.location_on_outlined, 'Manage Addresses', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
+          _tile(Icons.location_on_outlined, 'Manage Addresses', null, cardColor, textColor, isDark, () => context.push('/manage-addresses')),
           _tile(Icons.payment_outlined, 'Payment Methods', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
           _tile(Icons.local_offer_outlined, 'My Coupons', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
 

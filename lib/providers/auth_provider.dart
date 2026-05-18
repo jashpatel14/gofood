@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/auth_api.dart';
 import '../api/dio_client.dart';
 import '../models/user_model.dart';
@@ -76,8 +77,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    final userId = state.user?.id?.toString();
     DioClient.instance.clearToken();
     state = const AuthState();
+    
+    // Clear all local storage data to prevent leaking data to next user
+    final prefs = await SharedPreferences.getInstance();
+    // Remove specific user data keys instead of everything (so theme is preserved)
+    if (userId != null) {
+      await prefs.remove('user_addresses_$userId');
+    }
+    await prefs.remove('user_addresses');
+    // Note: tokenKey, userKey etc are probably handled elsewhere, but clear them too if they exist
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
   }
 }
