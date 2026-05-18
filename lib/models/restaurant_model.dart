@@ -30,14 +30,14 @@ class RestaurantModel {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       image: json['image'] ?? '',
-      rating: (json['rating'] ?? 0).toDouble(),
+      rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
       reviewCount: json['review_count'] ?? 0,
       deliveryTime: json['delivery_time'] ?? '30 min',
       cuisineType: json['cuisine_type'] ?? '',
-      isOpen: json['is_open'] ?? true,
+      isOpen: json['is_open'] == null ? true : (json['is_open'] == 1 || json['is_open'] == true),
       address: json['address'] ?? '',
-      distance: (json['distance'] ?? 0).toDouble(),
-      deliveryFee: (json['delivery_fee'] ?? 40).toDouble(),
+      distance: double.tryParse(json['distance']?.toString() ?? '0') ?? 0.0,
+      deliveryFee: double.tryParse(json['delivery_fee']?.toString() ?? '40') ?? 40.0,
     );
   }
 

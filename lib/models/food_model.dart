@@ -15,8 +15,8 @@ class AddonModel {
     return AddonModel(
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      isSelected: json['is_selected'] ?? false,
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      isSelected: json['is_selected'] == null ? false : (json['is_selected'] == 1 || json['is_selected'] == true),
     );
   }
 
@@ -74,13 +74,13 @@ class FoodModel {
       name: json['name'] ?? '',
       image: json['image'] ?? '',
       description: json['description'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      rating: (json['rating'] ?? 0).toDouble(),
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
       restaurantId: json['restaurant_id']?.toString() ?? '',
       restaurantName: json['restaurant_name'] ?? '',
       category: json['category'] ?? '',
-      isVeg: json['is_veg'] ?? true,
-      isPopular: json['is_popular'] ?? false,
+      isVeg: json['is_veg'] == null ? true : (json['is_veg'] == 1 || json['is_veg'] == true),
+      isPopular: json['is_popular'] == null ? false : (json['is_popular'] == 1 || json['is_popular'] == true),
       addons: (json['addons'] as List?)
               ?.map((e) => AddonModel.fromJson(e))
               .toList() ??

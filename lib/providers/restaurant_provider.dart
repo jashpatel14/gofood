@@ -5,28 +5,16 @@ import '../services/mock_data_service.dart';
 
 // Provider for all restaurants
 final restaurantListProvider = FutureProvider<List<RestaurantModel>>((ref) async {
-  try {
-    return await RestaurantApi().getRestaurants();
-  } catch (_) {
-    return MockData.restaurants;
-  }
+  return await RestaurantApi().getRestaurants();
 });
 
 // Provider for a single restaurant by ID
 final restaurantDetailProvider = FutureProvider.family<RestaurantModel?, String>((ref, id) async {
-  try {
-    return await RestaurantApi().getRestaurantById(id);
-  } catch (_) {
-    return MockData.getRestaurantById(id);
-  }
+  return await RestaurantApi().getRestaurantById(id);
 });
 
 // Provider for restaurant search
 final restaurantSearchProvider = FutureProvider.family<List<RestaurantModel>, String>((ref, query) async {
   if (query.isEmpty) return [];
-  try {
-    return await RestaurantApi().searchRestaurants(query);
-  } catch (_) {
-    return MockData.searchRestaurants(query);
-  }
+  return await RestaurantApi().searchRestaurants(query);
 });

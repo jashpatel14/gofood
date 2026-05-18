@@ -49,9 +49,8 @@ class OrderNotifier extends StateNotifier<OrderState> {
     try {
       final orders = await _orderApi.getOrders();
       state = OrderState(orders: orders);
-    } catch (_) {
-      // Fallback to mock data
-      state = OrderState(orders: MockData.sampleOrders);
+    } catch (e) {
+      state = OrderState(orders: [], error: e.toString());
     }
   }
 
@@ -81,9 +80,10 @@ class OrderNotifier extends StateNotifier<OrderState> {
     String orderId;
     try {
       final result = await _orderApi.placeOrder(orderData);
-      orderId = result['id'] ?? 'ORD-${1004 + state.orders.length}';
-    } catch (_) {
-      orderId = 'ORD-${1004 + state.orders.length}';
+      orderId = result['id']?.toString() ?? 'ORD-${DateTime.now().millisecondsSinceEpoch}';
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to place order');
+      throw Exception('Failed to place order: $e');
     }
 
     final order = OrderModel(

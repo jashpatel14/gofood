@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/order_provider.dart';
 import '../../providers/theme_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -42,20 +43,20 @@ class ProfileScreen extends ConsumerWidget {
           // Stats
           Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20), boxShadow: isDark ? null : AppColors.cardShadow),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-              _stat('Orders', '12', textColor, subColor),
+              _stat('Orders', '${ref.watch(orderProvider).orders.length}', textColor, subColor),
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
-              _stat('Favorites', '8', textColor, subColor),
+              _stat('Favorites', '0', textColor, subColor),
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
-              _stat('Addresses', '3', textColor, subColor),
+              _stat('Addresses', '0', textColor, subColor),
             ])),
 
           const SizedBox(height: 24),
 
           // Settings
-          _tile(Icons.person_outline, 'Edit Profile', null, cardColor, textColor, isDark, () {}),
-          _tile(Icons.location_on_outlined, 'Manage Addresses', null, cardColor, textColor, isDark, () {}),
-          _tile(Icons.payment_outlined, 'Payment Methods', null, cardColor, textColor, isDark, () {}),
-          _tile(Icons.local_offer_outlined, 'My Coupons', null, cardColor, textColor, isDark, () {}),
+          _tile(Icons.person_outline, 'Edit Profile', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
+          _tile(Icons.location_on_outlined, 'Manage Addresses', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
+          _tile(Icons.payment_outlined, 'Payment Methods', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
+          _tile(Icons.local_offer_outlined, 'My Coupons', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
 
           // Dark mode toggle
           Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(16),
@@ -69,8 +70,8 @@ class ProfileScreen extends ConsumerWidget {
                 onChanged: (_) => ref.read(themeProvider.notifier).toggleTheme()),
             ])),
 
-          _tile(Icons.help_outline, 'Help & Support', null, cardColor, textColor, isDark, () {}),
-          _tile(Icons.info_outline, 'About', 'v1.0.0', cardColor, textColor, isDark, () {}),
+          _tile(Icons.help_outline, 'Help & Support', null, cardColor, textColor, isDark, () => _showComingSoon(context)),
+          _tile(Icons.info_outline, 'About', 'v1.0.0', cardColor, textColor, isDark, () => _showComingSoon(context)),
 
           const SizedBox(height: 8),
 
@@ -98,6 +99,16 @@ class ProfileScreen extends ConsumerWidget {
         ])),
       ])),
     );
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text('Feature coming soon!'),
+      backgroundColor: AppColors.primary,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      duration: const Duration(seconds: 2),
+    ));
   }
 
   Widget _stat(String label, String value, Color textColor, Color subColor) {

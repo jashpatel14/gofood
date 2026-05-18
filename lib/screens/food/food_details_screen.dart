@@ -64,7 +64,7 @@ class _FoodDetailsScreenState extends ConsumerState<FoodDetailsScreen> {
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))]),
         child: SafeArea(
           child: Row(children: [
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Total', style: TextStyle(fontSize: 12, color: subColor)),
               const SizedBox(height: 2),
               Text('₹${_totalPrice.toInt()}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.primary)),

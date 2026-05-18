@@ -32,9 +32,9 @@ class OrderItemModel {
       foodId: json['food_id']?.toString() ?? '',
       foodName: json['food_name'] ?? '',
       foodImage: json['food_image'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
       quantity: json['quantity'] ?? 1,
-      totalPrice: (json['total_price'] ?? 0).toDouble(),
+      totalPrice: double.tryParse(json['total_price']?.toString() ?? '0') ?? 0.0,
     );
   }
 
@@ -86,11 +86,11 @@ class OrderModel {
               ?.map((e) => OrderItemModel.fromJson(e))
               .toList() ??
           [],
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
-      gst: (json['gst'] ?? 0).toDouble(),
-      deliveryFee: (json['delivery_fee'] ?? 0).toDouble(),
-      discount: (json['discount'] ?? 0).toDouble(),
-      totalAmount: (json['total_amount'] ?? 0).toDouble(),
+      subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
+      gst: double.tryParse(json['gst']?.toString() ?? '0') ?? 0.0,
+      deliveryFee: double.tryParse(json['delivery_fee']?.toString() ?? '0') ?? 0.0,
+      discount: double.tryParse(json['discount']?.toString() ?? '0') ?? 0.0,
+      totalAmount: double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0.0,
       status: OrderStatus.values.firstWhere(
         (s) => s.name == (json['status'] ?? 'pending'),
         orElse: () => OrderStatus.pending,

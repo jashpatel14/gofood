@@ -53,17 +53,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(user: user, isAuthenticated: true, isLoading: false);
       return true;
     } catch (e) {
-      // Fallback: if API is unreachable, use mock login
-      final user = UserModel(
-        id: '1',
-        name: 'Aarav Sharma',
-        email: email,
-        phone: '+91 98765 43210',
-        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-        token: 'mock_token',
-      );
-      state = AuthState(user: user, isAuthenticated: true, isLoading: false);
-      return true;
+      state = state.copyWith(isLoading: false, error: 'Login failed. Please try again.');
+      return false;
     }
   }
 
@@ -80,13 +71,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(user: user, isAuthenticated: true, isLoading: false);
       return true;
     } catch (e) {
-      // Fallback: if API is unreachable, use mock registration
-      final user = UserModel(
-        id: '1', name: name, email: email, phone: phone,
-        avatarUrl: '', token: 'mock_token',
-      );
-      state = AuthState(user: user, isAuthenticated: true, isLoading: false);
-      return true;
+      state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+      return false;
     }
   }
 
