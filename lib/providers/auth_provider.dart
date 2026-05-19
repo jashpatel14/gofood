@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 import '../api/auth_api.dart';
 import '../api/dio_client.dart';
 import '../models/user_model.dart';
@@ -54,7 +55,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(user: user, isAuthenticated: true, isLoading: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Login failed. Please try again.');
+      String errorMessage = 'Login failed. Please try again.';
+      if (e is DioException) {
+        if (e.response?.data != null && e.response?.data is Map) {
+          final message = e.response?.data['message'] ?? e.response?.data['error'];
+          if (message != null) {
+            errorMessage = message.toString();
+          }
+        } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+          errorMessage = 'Connection timeout. Please check your internet connection.';
+        } else if (e.type == DioExceptionType.connectionError) {
+          errorMessage = 'Server unreachable. Please check if backend is running.';
+        }
+      }
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
   }
@@ -72,7 +86,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(user: user, isAuthenticated: true, isLoading: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+      String errorMessage = 'Registration failed. Please try again.';
+      if (e is DioException) {
+        if (e.response?.data != null && e.response?.data is Map) {
+          final message = e.response?.data['message'] ?? e.response?.data['error'];
+          if (message != null) {
+            errorMessage = message.toString();
+          }
+        } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+          errorMessage = 'Connection timeout. Please check your internet connection.';
+        } else if (e.type == DioExceptionType.connectionError) {
+          errorMessage = 'Server unreachable. Please check if backend is running.';
+        }
+      }
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
   }
