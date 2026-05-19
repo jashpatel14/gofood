@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/restaurant_status.dart';
+import '../../services/restaurant_status_service.dart';
 import '../../providers/food_provider.dart';
 import '../../providers/restaurant_provider.dart';
 import '../../providers/cart_provider.dart';
@@ -59,7 +61,7 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
               Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent]))),
               Positioned(bottom: 20, left: 20, right: 20, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  if (restaurant.isOpen) StatusBadge.open() else StatusBadge.closed(),
+                  RestaurantStatusBadge(status: restaurant.status),
                   const SizedBox(width: 8),
                   RatingBadge(rating: restaurant.rating),
                 ]),
@@ -79,7 +81,7 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(18), boxShadow: isDark ? null : AppColors.cardShadow),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-              _infoItem(Icons.timer_outlined, restaurant.deliveryTime, 'Delivery', textColor, subColor),
+              _infoItem(Icons.timer_outlined, restaurant.status == RestaurantStatus.busy ? '${restaurant.deliveryTime} (+15m busy)' : restaurant.deliveryTime, 'Delivery', textColor, subColor),
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
               _infoItem(Icons.star_rounded, '${restaurant.rating}', '${restaurant.reviewCount}+ ratings', textColor, subColor),
               Container(width: 1, height: 40, color: isDark ? AppColors.darkDivider : AppColors.divider),
@@ -87,6 +89,34 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
             ]),
           ).animate().fadeIn(duration: 400.ms),
         ),
+
+        // Closed or Temporarily Paused warning banner
+        if (restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed)
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.25), width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.red, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      restaurant.status == RestaurantStatus.temporarilyClosed
+                          ? 'We are temporarily closed. Accepting orders soon!'
+                          : 'Ordering is disabled because this restaurant is closed. Opens at ${RestaurantStatusService.formatTimeTo12Hour(restaurant.openTime)}.',
+                      style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().shake(duration: 400.ms),
+          ),
 
         // Category Chips
         SliverToBoxAdapter(
@@ -137,6 +167,23 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
                       Text('₹${food.price.toInt()}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
                       Builder(
                         builder: (context) {
+                          final isClosedOrPaused = restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed;
+                          
+                          if (isClosedOrPaused) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.withValues(alpha: 0.35), width: 1.2),
+                              ),
+                              child: const Text(
+                                'CLOSED',
+                                style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w700),
+                              ),
+                            );
+                          }
+
                           final cartState = ref.watch(cartProvider);
                           final cartItemIndex = cartState.items.indexWhere((item) => item.food.id == food.id);
                           final isInCart = cartItemIndex != -1;

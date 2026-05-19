@@ -31,6 +31,10 @@ class MockData {
       isOpen: true,
       address: 'MG Road, Bangalore',
       distance: 2.5,
+      openTime: '11:00',
+      closeTime: '04:00', // Overnight support test (OPEN during daytime/night)
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '2',
@@ -43,6 +47,10 @@ class MockData {
       isOpen: true,
       address: 'Koramangala, Bangalore',
       distance: 1.8,
+      openTime: '08:00',
+      closeTime: '23:30',
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '3',
@@ -55,6 +63,10 @@ class MockData {
       isOpen: true,
       address: 'Indiranagar, Bangalore',
       distance: 3.2,
+      openTime: '10:00',
+      closeTime: '22:00',
+      isBusy: true, // Busy state test (shows busy badge + higher delivery time)
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '4',
@@ -67,6 +79,10 @@ class MockData {
       isOpen: true,
       address: 'HSR Layout, Bangalore',
       distance: 1.2,
+      openTime: '09:00',
+      closeTime: '23:00',
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '5',
@@ -79,6 +95,10 @@ class MockData {
       isOpen: false,
       address: 'Jayanagar, Bangalore',
       distance: 4.0,
+      openTime: '07:00',
+      closeTime: '21:00',
+      isBusy: false,
+      isTemporarilyClosed: true, // Temporarily Closed test (ordering completely disabled)
     ),
     RestaurantModel(
       id: '6',
@@ -91,6 +111,10 @@ class MockData {
       isOpen: true,
       address: 'Whitefield, Bangalore',
       distance: 5.5,
+      openTime: '09:00',
+      closeTime: '23:59',
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '7',
@@ -100,9 +124,13 @@ class MockData {
       reviewCount: 156,
       deliveryTime: '35-45 min',
       cuisineType: 'Tandoori • North Indian • Kebab',
-      isOpen: true,
+      isOpen: false,
       address: 'Electronic City, Bangalore',
       distance: 6.0,
+      openTime: '17:00', // Closed during early/mid day (opens at 5 PM)
+      closeTime: '23:00',
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
     RestaurantModel(
       id: '8',
@@ -115,6 +143,10 @@ class MockData {
       isOpen: true,
       address: 'BTM Layout, Bangalore',
       distance: 1.5,
+      openTime: '08:00',
+      closeTime: '23:00',
+      isBusy: false,
+      isTemporarilyClosed: false,
     ),
   ];
 

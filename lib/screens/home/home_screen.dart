@@ -9,6 +9,8 @@ import '../../providers/food_provider.dart';
 import '../../providers/restaurant_provider.dart';
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
+import '../../models/restaurant_status.dart';
+import '../../services/restaurant_status_service.dart';
 import '../../services/mock_data_service.dart';
 import '../../widgets/network_image_widget.dart';
 import '../../widgets/status_badge.dart';
@@ -553,6 +555,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (restaurants) => ListView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: restaurants.length > 4 ? 4 : restaurants.length, itemBuilder: (ctx, i) {
                 final r = restaurants[i];
+                final displayDeliveryTime = r.status == RestaurantStatus.busy ? '${r.deliveryTime} (+15m busy)' : r.deliveryTime;
+
                 return GestureDetector(onTap: () => context.push('/restaurant/${r.id}'),
                   child: Container(margin: const EdgeInsets.only(bottom: 18), decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(22), boxShadow: isDark ? null : AppColors.cardShadow),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -561,13 +565,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Positioned(top: 12, right: 12, child: RatingBadge(rating: r.rating)),
                         Positioned(bottom: 12, left: 12, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.timer_outlined, size: 14, color: AppColors.primary), const SizedBox(width: 4),
-                            Text(r.deliveryTime, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))]))),
-                        if (!r.isOpen) Positioned(top: 12, left: 12, child: StatusBadge.closed()),
+                            Text(displayDeliveryTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black.withValues(alpha: 0.85)))]))),
                       ]),
                       Padding(padding: const EdgeInsets.fromLTRB(16, 14, 16, 14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(r.name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: textColor)),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Expanded(child: Text(r.name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: textColor))),
+                          const SizedBox(width: 8),
+                          RestaurantStatusBadge(status: r.status),
+                        ]),
                         const SizedBox(height: 6),
-                        Text(r.cuisineType, style: TextStyle(fontSize: 13, color: subColor), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Expanded(child: Text(r.cuisineType, style: TextStyle(fontSize: 13, color: subColor), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                          Text(
+                            r.status == RestaurantStatus.closed
+                                ? 'Opens at ${RestaurantStatusService.formatTimeTo12Hour(r.openTime)}'
+                                : r.status == RestaurantStatus.closingSoon
+                                    ? 'Closes at ${RestaurantStatusService.formatTimeTo12Hour(r.closeTime)}'
+                                    : 'Hours: ${RestaurantStatusService.formatTimeTo12Hour(r.openTime)} - ${RestaurantStatusService.formatTimeTo12Hour(r.closeTime)}',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: r.status == RestaurantStatus.closed ? AppColors.error : subColor),
+                          ),
+                        ]),
                       ])),
                     ])));
               })),

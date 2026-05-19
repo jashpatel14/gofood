@@ -1,3 +1,6 @@
+import 'restaurant_status.dart';
+import '../services/restaurant_status_service.dart';
+
 class RestaurantModel {
   final String id;
   final String name;
@@ -6,10 +9,14 @@ class RestaurantModel {
   final int reviewCount;
   final String deliveryTime;
   final String cuisineType;
-  final bool isOpen;
+  final bool isOpen; // Retained for compatibility/fallback
   final String address;
   final double distance;
   final double deliveryFee;
+  final String openTime;
+  final String closeTime;
+  final bool isBusy;
+  final bool isTemporarilyClosed;
 
   const RestaurantModel({
     required this.id,
@@ -23,7 +30,29 @@ class RestaurantModel {
     this.address = '',
     this.distance = 0.0,
     this.deliveryFee = 40.0,
+    this.openTime = '09:00',
+    this.closeTime = '22:00',
+    this.isBusy = false,
+    this.isTemporarilyClosed = false,
   });
+
+  /// Calculates the live dynamic status of the restaurant
+  RestaurantStatus get status {
+    if (isTemporarilyClosed) {
+      return RestaurantStatus.temporarilyClosed;
+    }
+    if (!RestaurantStatusService.isTimeWithinRange(openTime, closeTime)) {
+      return RestaurantStatus.closed;
+    }
+    final minutesLeft = RestaurantStatusService.getMinutesBeforeClose(openTime, closeTime);
+    if (minutesLeft > 0 && minutesLeft <= 30) {
+      return RestaurantStatus.closingSoon;
+    }
+    if (isBusy) {
+      return RestaurantStatus.busy;
+    }
+    return RestaurantStatus.open;
+  }
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) {
     return RestaurantModel(
@@ -38,6 +67,10 @@ class RestaurantModel {
       address: json['address'] ?? '',
       distance: double.tryParse(json['distance']?.toString() ?? '0') ?? 0.0,
       deliveryFee: double.tryParse(json['delivery_fee']?.toString() ?? '40') ?? 40.0,
+      openTime: json['open_time'] ?? '09:00',
+      closeTime: json['close_time'] ?? '22:00',
+      isBusy: json['is_busy'] == null ? false : (json['is_busy'] == 1 || json['is_busy'] == true),
+      isTemporarilyClosed: json['is_temporarily_closed'] == null ? false : (json['is_temporarily_closed'] == 1 || json['is_temporarily_closed'] == true),
     );
   }
 
@@ -54,6 +87,10 @@ class RestaurantModel {
       'address': address,
       'distance': distance,
       'delivery_fee': deliveryFee,
+      'open_time': openTime,
+      'close_time': closeTime,
+      'is_busy': isBusy,
+      'is_temporarily_closed': isTemporarilyClosed,
     };
   }
 }

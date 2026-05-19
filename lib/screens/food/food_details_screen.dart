@@ -4,8 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/food_model.dart';
+import '../../models/restaurant_status.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/food_provider.dart';
+import '../../providers/restaurant_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/network_image_widget.dart';
 
@@ -56,6 +58,11 @@ class _FoodDetailsScreenState extends ConsumerState<FoodDetailsScreen> {
     _initAddons(food);
     final addons = _addons ?? [];
 
+    final restaurantAsync = ref.watch(restaurantDetailProvider(food.restaurantId));
+    final restaurant = restaurantAsync.value;
+    final isClosedOrPaused = restaurant != null && 
+        (restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed);
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       bottomNavigationBar: Container(
@@ -70,8 +77,12 @@ class _FoodDetailsScreenState extends ConsumerState<FoodDetailsScreen> {
               Text('₹${_totalPrice.toInt()}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.primary)),
             ]),
             const SizedBox(width: 20),
-            Expanded(child: CustomButton(text: 'Add To Cart', icon: Icons.shopping_bag_outlined,
-              onPressed: () {
+            Expanded(child: CustomButton(
+              text: isClosedOrPaused 
+                  ? (restaurant.status == RestaurantStatus.temporarilyClosed ? 'Temporarily Closed' : 'Restaurant is Closed') 
+                  : 'Add To Cart', 
+              icon: isClosedOrPaused ? Icons.block : Icons.shopping_bag_outlined,
+              onPressed: isClosedOrPaused ? null : () {
                 final selected = addons.where((a) => a.isSelected).toList();
                 ref.read(cartProvider.notifier).addItem(food, _quantity, selected);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -80,7 +91,8 @@ class _FoodDetailsScreenState extends ConsumerState<FoodDetailsScreen> {
                   duration: const Duration(seconds: 2),
                   action: SnackBarAction(label: 'VIEW CART', textColor: Colors.white, onPressed: () => context.push('/cart')),
                 ));
-              })),
+              },
+            )),
           ]),
         ),
       ),

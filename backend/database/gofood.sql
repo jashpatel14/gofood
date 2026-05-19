@@ -27,7 +27,11 @@ CREATE TABLE IF NOT EXISTS restaurants (
   is_open BOOLEAN DEFAULT TRUE,
   address VARCHAR(300) DEFAULT '',
   distance DECIMAL(4,1) DEFAULT 0.0,
-  delivery_fee DECIMAL(6,2) DEFAULT 40.00
+  delivery_fee DECIMAL(6,2) DEFAULT 40.00,
+  open_time VARCHAR(10) DEFAULT '09:00',
+  close_time VARCHAR(10) DEFAULT '22:00',
+  is_busy BOOLEAN DEFAULT FALSE,
+  is_temporarily_closed BOOLEAN DEFAULT FALSE
 );
 
 -- Foods
@@ -109,15 +113,15 @@ CREATE TABLE IF NOT EXISTS coupons (
 -- ═══════════════════════════════════════════
 
 -- Restaurants
-INSERT INTO restaurants (name, image, rating, review_count, delivery_time, cuisine_type, is_open, address, distance, delivery_fee) VALUES
-('Royal Biryani House', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600', 4.5, 324, '25-35 min', 'Biryani • Mughlai • North Indian', TRUE, 'MG Road, Bangalore', 2.5, 40),
-('Pizza Paradise', 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600', 4.7, 512, '20-30 min', 'Pizza • Italian • Pasta', TRUE, 'Koramangala, Bangalore', 1.8, 40),
-('Dragon Wok', 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600', 4.3, 267, '30-40 min', 'Chinese • Thai • Asian', TRUE, 'Indiranagar, Bangalore', 3.2, 40),
-('Burger Junction', 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600', 4.6, 445, '15-25 min', 'Burger • American • Fast Food', TRUE, 'HSR Layout, Bangalore', 1.2, 40),
-('South Spice', 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600', 4.4, 198, '20-30 min', 'South Indian • Dosa • Idli', FALSE, 'Jayanagar, Bangalore', 4.0, 40),
-('Dessert Haven', 'https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600', 4.8, 678, '25-35 min', 'Desserts • Ice Cream • Cakes', TRUE, 'Whitefield, Bangalore', 5.5, 40),
-('Tandoori Nights', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600', 4.2, 156, '35-45 min', 'Tandoori • North Indian • Kebab', TRUE, 'Electronic City, Bangalore', 6.0, 40),
-('Wrap & Roll', 'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=600', 4.1, 89, '15-20 min', 'Rolls • Wraps • Kebabs', TRUE, 'BTM Layout, Bangalore', 1.5, 40);
+INSERT INTO restaurants (name, image, rating, review_count, delivery_time, cuisine_type, is_open, address, distance, delivery_fee, open_time, close_time, is_busy, is_temporarily_closed) VALUES
+('Royal Biryani House', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600', 4.5, 324, '25-35 min', 'Biryani • Mughlai • North Indian', TRUE, 'MG Road, Bangalore', 2.5, 40, '11:00', '04:00', FALSE, FALSE),
+('Pizza Paradise', 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600', 4.7, 512, '20-30 min', 'Pizza • Italian • Pasta', TRUE, 'Koramangala, Bangalore', 1.8, 40, '08:00', '23:30', FALSE, FALSE),
+('Dragon Wok', 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600', 4.3, 267, '30-40 min', 'Chinese • Thai • Asian', TRUE, 'Indiranagar, Bangalore', 3.2, 40, '10:00', '22:00', TRUE, FALSE),
+('Burger Junction', 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600', 4.6, 445, '15-25 min', 'Burger • American • Fast Food', TRUE, 'HSR Layout, Bangalore', 1.2, 40, '09:00', '23:00', FALSE, FALSE),
+('South Spice', 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600', 4.4, 198, '20-30 min', 'South Indian • Dosa • Idli', FALSE, 'Jayanagar, Bangalore', 4.0, 40, '07:00', '21:00', FALSE, TRUE),
+('Dessert Haven', 'https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600', 4.8, 678, '25-35 min', 'Desserts • Ice Cream • Cakes', TRUE, 'Whitefield, Bangalore', 5.5, 40, '09:00', '23:59', FALSE, FALSE),
+('Tandoori Nights', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600', 4.2, 156, '35-45 min', 'Tandoori • North Indian • Kebab', TRUE, 'Electronic City, Bangalore', 6.0, 40, '17:00', '23:00', FALSE, FALSE),
+('Wrap & Roll', 'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=600', 4.1, 89, '15-20 min', 'Rolls • Wraps • Kebabs', TRUE, 'BTM Layout, Bangalore', 1.5, 40, '08:00', '23:00', FALSE, FALSE);
 
 -- Foods (sample - matches mock data)
 INSERT INTO foods (name, image, description, price, rating, restaurant_id, category, is_veg, is_popular) VALUES

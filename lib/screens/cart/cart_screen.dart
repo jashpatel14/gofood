@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/restaurant_model.dart';
+import '../../models/restaurant_status.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/restaurant_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/network_image_widget.dart';
@@ -29,6 +32,28 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final subColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final cardColor = isDark ? AppColors.darkCard : AppColors.surface;
 
+    final restaurantsAsync = ref.watch(restaurantListProvider);
+    final restaurants = restaurantsAsync.value ?? [];
+
+    bool hasClosedRestaurantItems = false;
+    String closedRestaurantName = '';
+    if (restaurants.isNotEmpty) {
+      for (final item in cart.items) {
+        RestaurantModel? rest;
+        for (final r in restaurants) {
+          if (r.id == item.food.restaurantId) {
+            rest = r;
+            break;
+          }
+        }
+        if (rest != null && (rest.status == RestaurantStatus.closed || rest.status == RestaurantStatus.temporarilyClosed)) {
+          hasClosedRestaurantItems = true;
+          closedRestaurantName = rest.name;
+          break;
+        }
+      }
+    }
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(title: Text('My Cart (${cart.totalItems})')),
@@ -40,6 +65,28 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             })
         : Column(children: [
           Expanded(child: SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: const EdgeInsets.all(16), child: Column(children: [
+            if (hasClosedRestaurantItems)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.25), width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Ordering is disabled because "$closedRestaurantName" is currently closed. Please remove these items to proceed.',
+                        style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w600, height: 1.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().shake(duration: 400.ms),
             // Cart Items
             ...List.generate(cart.items.length, (i) {
               final item = cart.items[i];
@@ -136,7 +183,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           // Checkout Button
           Container(padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             decoration: BoxDecoration(color: cardColor, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))]),
-            child: SafeArea(child: CustomButton(text: 'Proceed To Checkout  •  ₹${cart.total.toStringAsFixed(0)}', onPressed: () => context.push('/checkout')))),
+            child: SafeArea(
+              child: CustomButton(
+                text: hasClosedRestaurantItems 
+                    ? 'Restaurant is Closed' 
+                    : 'Proceed To Checkout  •  ₹${cart.total.toStringAsFixed(0)}',
+                onPressed: hasClosedRestaurantItems ? null : () => context.push('/checkout'),
+              ),
+            )),
         ]),
     );
   }
