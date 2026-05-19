@@ -7,6 +7,7 @@ import '../../providers/cart_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/network_image_widget.dart';
+import '../navigation/main_navigation_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -33,7 +34,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       appBar: AppBar(title: Text('My Cart (${cart.totalItems})')),
       body: cart.isEmpty
         ? EmptyStateWidget(icon: Icons.shopping_cart_outlined, title: 'Your cart is empty', subtitle: 'Browse restaurants and add delicious food to your cart!',
-            buttonText: 'Browse Restaurants', onButtonPressed: () => context.go('/navigation'))
+            buttonText: 'Browse Restaurants', onButtonPressed: () {
+              ref.read(navigationIndexProvider.notifier).state = 0;
+              context.go('/navigation');
+            })
         : Column(children: [
           Expanded(child: SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: const EdgeInsets.all(16), child: Column(children: [
             // Cart Items

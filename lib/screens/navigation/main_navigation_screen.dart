@@ -7,6 +7,8 @@ import '../home/home_screen.dart';
 import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
 
+final navigationIndexProvider = StateProvider<int>((ref) => 0);
+
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
   @override
@@ -14,16 +16,16 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
-  int _currentIndex = 0;
   final _screens = const [HomeScreen(), OrdersScreen(), CartScreen(), ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cartCount = ref.watch(cartProvider).totalItems;
+    final currentIndex = ref.watch(navigationIndexProvider);
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(index: currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.surface,
@@ -32,19 +34,19 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         child: SafeArea(
           child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-              _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
-              _navItem(1, Icons.receipt_long_rounded, Icons.receipt_long_outlined, 'Orders'),
-              _cartNavItem(cartCount, isDark),
-              _navItem(3, Icons.person_rounded, Icons.person_outlined, 'Profile'),
+              _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home', currentIndex),
+              _navItem(1, Icons.receipt_long_rounded, Icons.receipt_long_outlined, 'Orders', currentIndex),
+              _cartNavItem(cartCount, isDark, currentIndex),
+              _navItem(3, Icons.person_rounded, Icons.person_outlined, 'Profile', currentIndex),
             ])),
         ),
       ),
     );
   }
 
-  Widget _navItem(int index, IconData activeIcon, IconData icon, String label) {
-    final isActive = _currentIndex == index;
-    return GestureDetector(onTap: () => setState(() => _currentIndex = index),
+  Widget _navItem(int index, IconData activeIcon, IconData icon, String label, int currentIndex) {
+    final isActive = currentIndex == index;
+    return GestureDetector(onTap: () => ref.read(navigationIndexProvider.notifier).state = index,
       child: AnimatedContainer(duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: isActive ? 18 : 14, vertical: 8),
         decoration: BoxDecoration(color: isActive ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent, borderRadius: BorderRadius.circular(14)),
@@ -55,9 +57,9 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         ])));
   }
 
-  Widget _cartNavItem(int count, bool isDark) {
-    final isActive = _currentIndex == 2;
-    return GestureDetector(onTap: () => setState(() => _currentIndex = 2),
+  Widget _cartNavItem(int count, bool isDark, int currentIndex) {
+    final isActive = currentIndex == 2;
+    return GestureDetector(onTap: () => ref.read(navigationIndexProvider.notifier).state = 2,
       child: AnimatedContainer(duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: isActive ? 18 : 14, vertical: 8),
         decoration: BoxDecoration(color: isActive ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent, borderRadius: BorderRadius.circular(14)),
