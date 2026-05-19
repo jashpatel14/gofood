@@ -29,9 +29,21 @@ class ManageAddressScreen extends ConsumerWidget {
                 final address = addresses[index];
                 return AddressCard(
                   address: address,
+                  isSelected: address.isDefault,
+                  onTap: () async {
+                    await ref.read(addressProvider.notifier).setDefaultAddress(address.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('${address.addressType} set as active delivery location!'),
+                        backgroundColor: AppColors.success,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ));
+                    }
+                  },
                   onEdit: () => context.push('/add-address', extra: address),
                   onDelete: () => _confirmDelete(context, ref, address.id),
-                  onSetDefault: () => ref.read(addressProvider.notifier).setDefaultAddress(address.id),
                 );
               },
             ),

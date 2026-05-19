@@ -14,6 +14,7 @@ import '../screens/search/search_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/address/manage_address_screen.dart';
 import '../screens/address/add_address_screen.dart';
+import '../screens/food/category_details_screen.dart';
 import '../models/address_model.dart';
 
 class AppRouter {
@@ -112,6 +113,13 @@ class AppRouter {
           final address = state.extra as AddressModel?;
           return AddAddressScreen(addressToEdit: address);
         },
+      ),
+      GoRoute(
+        path: '/category/:name',
+        name: 'category-details',
+        builder: (context, state) => CategoryDetailsScreen(
+          categoryName: state.pathParameters['name'] ?? '',
+        ),
       ),
     ],
   );

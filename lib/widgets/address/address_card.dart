@@ -129,20 +129,6 @@ class AddressCard extends StatelessWidget {
               Divider(height: 1, color: isDark ? AppColors.darkDivider : AppColors.divider),
               Row(
                 children: [
-                  if (!address.isDefault && onSetDefault != null)
-                    Expanded(
-                      child: _actionButton(
-                        'Set Default',
-                        AppColors.primary,
-                        onSetDefault!,
-                      ),
-                    ),
-                  if (!address.isDefault && onSetDefault != null)
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: isDark ? AppColors.darkDivider : AppColors.divider,
-                    ),
                   Expanded(
                     child: _actionButton(
                       'Edit',
