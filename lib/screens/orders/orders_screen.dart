@@ -6,6 +6,7 @@ import '../../models/order_model.dart';
 import '../../providers/order_provider.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/network_image_widget.dart';
+import 'package:go_router/go_router.dart';
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
@@ -47,40 +48,43 @@ class OrdersScreen extends ConsumerWidget {
       itemBuilder: (ctx, i) {
         final order = orders[i];
         final statusColor = _getStatusColor(order.status);
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20), boxShadow: isDark ? null : AppColors.cardShadow),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Header
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(order.id, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textColor)),
-              Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                child: Text(order.status.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: statusColor))),
+        return GestureDetector(
+          onTap: () => context.push('/order-details', extra: order),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20), boxShadow: isDark ? null : AppColors.cardShadow),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Header
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text(order.id, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textColor)),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text(order.status.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: statusColor))),
+              ]),
+              const SizedBox(height: 14),
+              // Items preview
+              SizedBox(height: 60, child: ListView.builder(scrollDirection: Axis.horizontal, itemCount: order.items.length,
+                itemBuilder: (ctx, j) {
+                  final item = order.items[j];
+                  return Padding(padding: const EdgeInsets.only(right: 10),
+                    child: Row(children: [
+                      NetworkImageWidget(imageUrl: item.foodImage, width: 50, height: 50, borderRadius: 12),
+                      const SizedBox(width: 10),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Text(item.foodName, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text('x${item.quantity}', style: TextStyle(fontSize: 12, color: subColor)),
+                      ]),
+                      if (j < order.items.length - 1) Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Container(width: 1, height: 30, color: isDark ? AppColors.darkDivider : AppColors.divider)),
+                    ]));
+                })),
+              Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 24),
+              // Footer
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text(_formatDate(order.createdAt), style: TextStyle(fontSize: 12, color: subColor)),
+                Text('₹${order.totalAmount.toStringAsFixed(0)}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              ]),
             ]),
-            const SizedBox(height: 14),
-            // Items preview
-            SizedBox(height: 60, child: ListView.builder(scrollDirection: Axis.horizontal, itemCount: order.items.length,
-              itemBuilder: (ctx, j) {
-                final item = order.items[j];
-                return Padding(padding: const EdgeInsets.only(right: 10),
-                  child: Row(children: [
-                    NetworkImageWidget(imageUrl: item.foodImage, width: 50, height: 50, borderRadius: 12),
-                    const SizedBox(width: 10),
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Text(item.foodName, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text('x${item.quantity}', style: TextStyle(fontSize: 12, color: subColor)),
-                    ]),
-                    if (j < order.items.length - 1) Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Container(width: 1, height: 30, color: isDark ? AppColors.darkDivider : AppColors.divider)),
-                  ]));
-              })),
-            Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 24),
-            // Footer
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(_formatDate(order.createdAt), style: TextStyle(fontSize: 12, color: subColor)),
-              Text('₹${order.totalAmount.toStringAsFixed(0)}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.primary)),
-            ]),
-          ]),
+          ),
         ).animate().fadeIn(delay: (i * 100).ms, duration: 350.ms);
       });
   }

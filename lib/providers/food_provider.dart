@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/food_api.dart';
 import '../models/food_model.dart';
-import '../services/mock_data_service.dart';
 
 // Provider for popular foods
 final popularFoodsProvider = FutureProvider<List<FoodModel>>((ref) async {

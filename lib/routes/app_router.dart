@@ -16,6 +16,13 @@ import '../screens/address/manage_address_screen.dart';
 import '../screens/address/add_address_screen.dart';
 import '../screens/food/category_details_screen.dart';
 import '../models/address_model.dart';
+import '../screens/profile/edit_profile_screen.dart';
+import '../screens/profile/my_coupons_screen.dart';
+import '../screens/profile/payment_methods_screen.dart';
+import '../screens/profile/help_support_screen.dart';
+import '../screens/profile/about_screen.dart';
+import '../models/order_model.dart';
+import '../screens/orders/order_details_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -120,6 +127,39 @@ class AppRouter {
         builder: (context, state) => CategoryDetailsScreen(
           categoryName: state.pathParameters['name'] ?? '',
         ),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        name: 'edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/my-coupons',
+        name: 'my-coupons',
+        builder: (context, state) => const MyCouponsScreen(),
+      ),
+      GoRoute(
+        path: '/payment-methods',
+        name: 'payment-methods',
+        builder: (context, state) => const PaymentMethodsScreen(),
+      ),
+      GoRoute(
+        path: '/help-support',
+        name: 'help-support',
+        builder: (context, state) => const HelpSupportScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        name: 'about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/order-details',
+        name: 'order-details',
+        builder: (context, state) {
+          final order = state.extra as OrderModel;
+          return OrderDetailsScreen(order: order);
+        },
       ),
     ],
   );

@@ -9,6 +9,9 @@ import '../../providers/cart_provider.dart';
 import '../../services/mock_data_service.dart';
 import '../../api/food_api.dart';
 import '../../api/restaurant_api.dart';
+import '../../models/restaurant_status.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../widgets/cart_counter_button.dart';
 import '../../widgets/network_image_widget.dart';
 import '../../widgets/status_badge.dart';
 
@@ -249,6 +252,7 @@ class _CategoryDetailsScreenState extends ConsumerState<CategoryDetailsScreen> w
 
   // ── Dishes Grid Tab View ──
   Widget _buildDishesTab(bool isDark, Color cardColor, Color textColor, Color subColor) {
+    final restaurants = ref.watch(restaurantListProvider).value ?? [];
     return FutureBuilder<List<FoodModel>>(
       future: _foodsFuture,
       builder: (context, snapshot) {
@@ -372,34 +376,19 @@ class _CategoryDetailsScreenState extends ConsumerState<CategoryDetailsScreen> w
                                 '₹${f.price.toInt()}',
                                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  ref.read(cartProvider.notifier).addItem(f, 1, []);
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('${f.name} added to cart!'),
-                                    backgroundColor: AppColors.success,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    action: SnackBarAction(
-                                      label: 'CART',
-                                      textColor: Colors.white,
-                                      onPressed: () => context.push('/cart'),
-                                    ),
-                                  ));
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                                  ),
-                                  child: const Text(
-                                    'ADD',
-                                    style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w800),
-                                  ),
-                                ),
+                              CartCounterButton(
+                                food: f,
+                                isDisabled: (() {
+                                  RestaurantModel? matchedRest;
+                                  for (final r in restaurants) {
+                                    if (r.id == f.restaurantId) {
+                                      matchedRest = r;
+                                      break;
+                                    }
+                                  }
+                                  return matchedRest != null && 
+                                      (matchedRest.status == RestaurantStatus.closed || matchedRest.status == RestaurantStatus.temporarilyClosed);
+                                })(),
                               ),
                             ],
                           ),

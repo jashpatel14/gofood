@@ -34,4 +34,19 @@ class AuthApi {
     final response = await _dio.get('/auth/profile');
     return UserModel.fromJson(response.data);
   }
+
+  Future<UserModel> updateProfile({
+    required String name,
+    required String email,
+    required String phone,
+    required String avatarUrl,
+  }) async {
+    final response = await _dio.put('/auth/profile', data: {
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'avatar_url': avatarUrl,
+    });
+    return UserModel.fromJson(response.data);
+  }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/order_api.dart';
 import '../models/order_model.dart';
-import '../services/mock_data_service.dart';
 import 'auth_provider.dart';
 
 final orderProvider = StateNotifierProvider<OrderNotifier, OrderState>((ref) {

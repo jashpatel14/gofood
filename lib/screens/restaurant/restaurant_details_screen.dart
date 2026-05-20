@@ -7,7 +7,7 @@ import '../../models/restaurant_status.dart';
 import '../../services/restaurant_status_service.dart';
 import '../../providers/food_provider.dart';
 import '../../providers/restaurant_provider.dart';
-import '../../providers/cart_provider.dart';
+import '../../widgets/cart_counter_button.dart';
 import '../../widgets/network_image_widget.dart';
 import '../../widgets/status_badge.dart';
 
@@ -165,95 +165,9 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
                     const SizedBox(height: 10),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       Text('₹${food.price.toInt()}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
-                      Builder(
-                        builder: (context) {
-                          final isClosedOrPaused = restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed;
-                          
-                          if (isClosedOrPaused) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey.withValues(alpha: 0.35), width: 1.2),
-                              ),
-                              child: const Text(
-                                'CLOSED',
-                                style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w700),
-                              ),
-                            );
-                          }
-
-                          final cartState = ref.watch(cartProvider);
-                          final cartItemIndex = cartState.items.indexWhere((item) => item.food.id == food.id);
-                          final isInCart = cartItemIndex != -1;
-
-                          if (isInCart) {
-                            final quantity = cartState.items[cartItemIndex].quantity;
-                            return Container(
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: AppColors.primary, width: 1.5),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      ref.read(cartProvider.notifier).decrementQuantity(food.id);
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 12),
-                                      child: Icon(Icons.remove, color: AppColors.primary, size: 16),
-                                    ),
-                                  ),
-                                  Text(
-                                    '$quantity',
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      ref.read(cartProvider.notifier).incrementQuantity(food.id);
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 12),
-                                      child: Icon(Icons.add, color: AppColors.primary, size: 16),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-
-                          return GestureDetector(
-                            onTap: () {
-                              if (food.addons.isNotEmpty) {
-                                context.push('/food-details/${food.id}');
-                              } else {
-                                ref.read(cartProvider.notifier).addItem(food, 1, []);
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: const Text('Added to cart!'), backgroundColor: AppColors.success,
-                                  behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  duration: const Duration(seconds: 2),
-                                  action: SnackBarAction(label: 'VIEW CART', textColor: Colors.white, onPressed: () => context.push('/cart')),
-                                ));
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
-                              child: const Text('ADD', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-                            ),
-                          );
-                        }
+                      CartCounterButton(
+                        food: food,
+                        isDisabled: restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed,
                       ),
                     ]),
                   ])),

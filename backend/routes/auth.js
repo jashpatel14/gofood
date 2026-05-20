@@ -67,4 +67,35 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
+// Update Profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name, email, phone, avatar_url } = req.body;
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: 'Name, email, and phone are required' });
+    }
+
+    // Check if email already taken by another user
+    const [existing] = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, req.userId]);
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Email already in use by another account' });
+    }
+
+    await db.query(
+      'UPDATE users SET name = ?, email = ?, phone = ?, avatar_url = ? WHERE id = ?',
+      [name, email, phone, avatar_url || '', req.userId]
+    );
+
+    res.json({
+      id: req.userId,
+      name,
+      email,
+      phone,
+      avatar_url: avatar_url || ''
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
