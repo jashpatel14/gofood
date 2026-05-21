@@ -49,4 +49,17 @@ class AuthApi {
     });
     return UserModel.fromJson(response.data);
   }
+
+  Future<void> forgotPassword(String email) async {
+    await _dio.post('/auth/forgot-password', data: {
+      'email': email,
+    });
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    await _dio.post('/auth/reset-password', data: {
+      'token': token,
+      'password': newPassword,
+    });
+  }
 }

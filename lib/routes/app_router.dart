@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/checkout/checkout_screen.dart';
 import '../screens/food/food_details_screen.dart';
@@ -61,6 +62,11 @@ class AppRouter {
         path: '/signup',
         name: 'signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/navigation',
