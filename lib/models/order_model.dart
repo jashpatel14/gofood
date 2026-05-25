@@ -63,6 +63,11 @@ class OrderModel {
   final String deliveryAddress;
   final DateTime createdAt;
   final String? estimatedDelivery;
+  final String? restaurantId;
+  final String? restaurantName;
+  final bool isRated;
+  final double? userRating;
+  final String? userComment;
 
   const OrderModel({
     required this.id,
@@ -77,6 +82,11 @@ class OrderModel {
     required this.deliveryAddress,
     required this.createdAt,
     this.estimatedDelivery,
+    this.restaurantId,
+    this.restaurantName,
+    this.isRated = false,
+    this.userRating,
+    this.userComment,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -101,6 +111,11 @@ class OrderModel {
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
       estimatedDelivery: json['estimated_delivery'],
+      restaurantId: json['restaurant_id']?.toString(),
+      restaurantName: json['restaurant_name']?.toString(),
+      isRated: json['is_rated'] == true || json['is_rated'] == 1,
+      userRating: json['user_rating'] != null ? double.tryParse(json['user_rating'].toString()) : null,
+      userComment: json['user_comment']?.toString(),
     );
   }
 
@@ -118,6 +133,11 @@ class OrderModel {
       'delivery_address': deliveryAddress,
       'created_at': createdAt.toIso8601String(),
       'estimated_delivery': estimatedDelivery,
+      'restaurant_id': restaurantId,
+      'restaurant_name': restaurantName,
+      'is_rated': isRated,
+      'user_rating': userRating,
+      'user_comment': userComment,
     };
   }
 }

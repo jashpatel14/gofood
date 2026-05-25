@@ -19,4 +19,9 @@ class OrderApi {
     final response = await _dio.get('/orders/$id');
     return OrderModel.fromJson(response.data);
   }
+
+  Future<Map<String, dynamic>> updateOrderStatus(String id, String status) async {
+    final response = await _dio.put('/orders/$id/status', data: {'status': status});
+    return response.data;
+  }
 }

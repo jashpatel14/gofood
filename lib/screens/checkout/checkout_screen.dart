@@ -31,6 +31,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (cart.isEmpty) return;
     setState(() => _isPlacing = true);
 
+    final firstCartItem = cart.items.first;
+    final restaurantId = firstCartItem.food.restaurantId;
+    final restaurantName = firstCartItem.food.restaurantName;
+
     final items = cart.items.map((item) => OrderItemModel(
       foodId: item.food.id, foodName: item.food.name, foodImage: item.food.image,
       price: item.food.price, quantity: item.quantity, totalPrice: item.itemPrice,
@@ -48,6 +52,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       discount: cart.discount, totalAmount: cart.total,
       paymentMethod: _paymentMethods[_selectedPayment]['title'] as String,
       deliveryAddress: address.fullAddress,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
     );
 
     ref.read(cartProvider.notifier).clearCart();

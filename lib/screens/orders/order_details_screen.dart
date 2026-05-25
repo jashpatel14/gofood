@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -5,19 +6,52 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/order_model.dart';
 import '../../widgets/network_image_widget.dart';
+import '../../api/restaurant_api.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../providers/order_provider.dart';
 
-class OrderDetailsScreen extends ConsumerWidget {
+class OrderDetailsScreen extends ConsumerStatefulWidget {
   final OrderModel order;
 
   const OrderDetailsScreen({super.key, required this.order});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
+}
+
+class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
+  Timer? _pollingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Poll the backend for this order's status every 4 seconds in the background
+    _pollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        ref.read(orderProvider.notifier).refreshOrder(widget.order.id);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orderState = ref.watch(orderProvider);
+    final activeOrder = orderState.orders.firstWhere(
+      (o) => o.id == widget.order.id,
+      orElse: () => widget.order,
+    );
+    final orderRef = activeOrder; // Shadowing reference safely
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final subColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final cardColor = isDark ? AppColors.darkCard : AppColors.surface;
-    final statusColor = _getStatusColor(order.status);
+    final statusColor = _getStatusColor(orderRef.status);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
@@ -65,7 +99,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          order.status.label.toUpperCase(),
+                          orderRef.status.label.toUpperCase(),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -75,14 +109,14 @@ class OrderDetailsScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          order.status.description,
+                          orderRef.status.description,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
-                        if (order.estimatedDelivery != null) ...[
+                        if (orderRef.estimatedDelivery != null) ...[
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -96,7 +130,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                                 const Icon(Icons.timer_outlined, color: Colors.white, size: 14),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'ETA: ${order.estimatedDelivery}',
+                                  'ETA: ${orderRef.estimatedDelivery}',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -111,7 +145,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  _getStatusIcon(order.status)
+                  _getStatusIcon(orderRef.status)
                       .animate(onPlay: (c) => c.repeat(reverse: true))
                       .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 2.seconds),
                 ],
@@ -136,14 +170,14 @@ class OrderDetailsScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   _buildStepperStep('Order Placed', 'We have received your food request', true, isDark),
-                  _buildDivider(order.status.index >= 1, isDark),
-                  _buildStepperStep('Accepted', 'Restaurant is reviewing your order', order.status.index >= 1, isDark),
-                  _buildDivider(order.status.index >= 2, isDark),
-                  _buildStepperStep('Preparing', 'Chef is cooking your fresh food box', order.status.index >= 2, isDark),
-                  _buildDivider(order.status.index >= 3, isDark),
-                  _buildStepperStep('Out for Delivery', 'Rider is carrying your warm box', order.status.index >= 3, isDark),
-                  _buildDivider(order.status.index >= 4, isDark),
-                  _buildStepperStep('Delivered', 'Delivered at your doorstep!', order.status.index >= 4, isDark),
+                  _buildDivider(orderRef.status.index >= 1, isDark),
+                  _buildStepperStep('Accepted', 'Restaurant is reviewing your order', orderRef.status.index >= 1, isDark),
+                  _buildDivider(orderRef.status.index >= 2, isDark),
+                  _buildStepperStep('Preparing', 'Chef is cooking your fresh food box', orderRef.status.index >= 2, isDark),
+                  _buildDivider(orderRef.status.index >= 3, isDark),
+                  _buildStepperStep('Out for Delivery', 'Rider is carrying your warm box', orderRef.status.index >= 3, isDark),
+                  _buildDivider(orderRef.status.index >= 4, isDark),
+                  _buildStepperStep('Delivered', 'Delivered at your doorstep!', orderRef.status.index >= 4, isDark),
                 ],
               ),
             ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
@@ -166,13 +200,13 @@ class OrderDetailsScreen extends ConsumerWidget {
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: order.items.length,
+                itemCount: orderRef.items.length,
                 separatorBuilder: (ctx, idx) => Divider(
                   color: isDark ? AppColors.darkDivider : AppColors.divider,
                   height: 24,
                 ),
                 itemBuilder: (ctx, idx) {
-                  final item = order.items[idx];
+                  final item = orderRef.items[idx];
                   return Row(
                     children: [
                       NetworkImageWidget(imageUrl: item.foodImage, width: 56, height: 56, borderRadius: 12),
@@ -220,17 +254,17 @@ class OrderDetailsScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  _billRow('Item Total', '₹${order.subtotal.toStringAsFixed(0)}', subColor, textColor, false),
+                  _billRow('Item Total', '₹${orderRef.subtotal.toStringAsFixed(0)}', subColor, textColor, false),
                   const SizedBox(height: 12),
-                  _billRow('Delivery Fee', '₹${order.deliveryFee.toStringAsFixed(0)}', subColor, textColor, false),
+                  _billRow('Delivery Fee', '₹${orderRef.deliveryFee.toStringAsFixed(0)}', subColor, textColor, false),
                   const SizedBox(height: 12),
-                  _billRow('GST & Restaurant Charges', '₹${order.gst.toStringAsFixed(0)}', subColor, textColor, false),
-                  if (order.discount > 0) ...[
+                  _billRow('GST & Restaurant Charges', '₹${orderRef.gst.toStringAsFixed(0)}', subColor, textColor, false),
+                  if (orderRef.discount > 0) ...[
                     const SizedBox(height: 12),
-                    _billRow('Coupon Discount', '-₹${order.discount.toStringAsFixed(0)}', AppColors.success, AppColors.success, false),
+                    _billRow('Coupon Discount', '-₹${orderRef.discount.toStringAsFixed(0)}', AppColors.success, AppColors.success, false),
                   ],
                   Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 28),
-                  _billRow('Grand Total', '₹${order.totalAmount.toStringAsFixed(0)}', textColor, AppColors.primary, true),
+                  _billRow('Grand Total', '₹${orderRef.totalAmount.toStringAsFixed(0)}', textColor, AppColors.primary, true),
                   Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -244,7 +278,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            order.paymentMethod,
+                            orderRef.paymentMethod,
                             style: TextStyle(fontSize: 12, color: textColor, fontWeight: FontWeight.w800),
                           ),
                         ],
@@ -312,7 +346,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              order.deliveryAddress,
+                              orderRef.deliveryAddress,
                               style: TextStyle(fontSize: 12, color: subColor, height: 1.4),
                             ),
                           ],
@@ -342,7 +376,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              order.id,
+                              orderRef.id,
                               style: TextStyle(fontSize: 12, color: subColor),
                             ),
                           ],
@@ -372,7 +406,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year} at ${_twoDigits(order.createdAt.hour)}:${_twoDigits(order.createdAt.minute)}',
+                              '${orderRef.createdAt.day}/${orderRef.createdAt.month}/${orderRef.createdAt.year} at ${_twoDigits(orderRef.createdAt.hour)}:${_twoDigits(orderRef.createdAt.minute)}',
                               style: TextStyle(fontSize: 12, color: subColor),
                             ),
                           ],
@@ -385,6 +419,11 @@ class OrderDetailsScreen extends ConsumerWidget {
             ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
 
             const SizedBox(height: 24),
+
+            // ── Zomato-style Restaurant Review Card (when delivered) ──
+            if (orderRef.status == OrderStatus.delivered) ...[
+              _RestaurantReviewCard(order: orderRef, ref: ref),
+            ],
 
             // ── Customer support button ──────────────────
             Row(
@@ -552,5 +591,319 @@ class OrderDetailsScreen extends ConsumerWidget {
       case OrderStatus.delivered:
         return AppColors.delivered;
     }
+  }
+}
+
+// ── Zomato/Swiggy-style Restaurant Review Card ──
+class _RestaurantReviewCard extends StatefulWidget {
+  final OrderModel order;
+  final WidgetRef ref;
+
+  const _RestaurantReviewCard({required this.order, required this.ref});
+
+  @override
+  State<_RestaurantReviewCard> createState() => _RestaurantReviewCardState();
+}
+
+class _RestaurantReviewCardState extends State<_RestaurantReviewCard> {
+  double _rating = 5.0;
+  final _commentController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  String _getRatingText(double rating) {
+    if (rating <= 1.0) return "Very Bad 😞";
+    if (rating <= 2.0) return "Bad 😐";
+    if (rating <= 3.0) return "Average 🙂";
+    if (rating <= 4.0) return "Delicious! 😋";
+    return "Awesome! 😍";
+  }
+
+  Future<void> _submitFeedback() async {
+    final restaurantId = widget.order.restaurantId;
+    if (restaurantId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cannot resolve restaurant details for rating.'))
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final comment = _commentController.text.trim();
+      // Call backend reviews API
+      await RestaurantApi().submitReview(
+        restaurantId,
+        _rating,
+        comment,
+        widget.order.id,
+      );
+
+      // Invalidate Riverpod providers to update the rating/review count in real-time
+      widget.ref.invalidate(restaurantDetailProvider(restaurantId));
+      widget.ref.invalidate(restaurantListProvider);
+
+      // Reactively mark this order as rated in the local order provider
+      widget.ref.read(orderProvider.notifier).markOrderAsRated(
+        widget.order.id,
+        _rating,
+        comment,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit feedback: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final subColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final cardColor = isDark ? AppColors.darkCard : AppColors.surface;
+    final restaurantName = widget.order.restaurantName ?? 'the Restaurant';
+
+    // If already rated (either from database or just submitted in-memory)
+    if (widget.order.isRated) {
+      final double userRating = widget.order.userRating ?? 5.0;
+      final String userComment = widget.order.userComment ?? '';
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : Colors.green.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.green.withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          boxShadow: isDark ? null : [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_rounded, color: AppColors.success, size: 16),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Your Review Submitted',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: textColor),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            
+            // Read-only stars
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                final starValue = index + 1.0;
+                final isSelected = starValue <= userRating;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    Icons.star_rounded,
+                    size: 28,
+                    color: isSelected ? Colors.amber[700] : (isDark ? Colors.white12 : Colors.grey[200]),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _getRatingText(userRating),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.amber[800]),
+            ),
+            
+            if (userComment.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkBackground.withValues(alpha: 0.4) : Colors.grey[50],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkDivider : AppColors.divider.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.format_quote_rounded, color: subColor.withValues(alpha: 0.4), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        userComment,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: textColor.withValues(alpha: 0.9),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ).animate().fadeIn(duration: 400.ms);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.divider.withValues(alpha: 0.8),
+          width: 1,
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.stars_rounded, color: Colors.amber[700], size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Rate Your Experience',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: textColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'How was the food from $restaurantName?',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: subColor),
+          ),
+          const SizedBox(height: 18),
+
+          // Rating stars
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (index) {
+              final starValue = index + 1.0;
+              final isSelected = starValue <= _rating;
+              return GestureDetector(
+                onTap: () => setState(() => _rating = starValue),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    Icons.star_rounded,
+                    size: 38,
+                    color: isSelected ? Colors.amber[700] : (isDark ? Colors.white24 : Colors.grey[300]),
+                  ).animate(target: isSelected ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15), duration: 150.ms),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _getRatingText(_rating),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.amber[800]),
+          ),
+          const SizedBox(height: 20),
+
+          // Review Comment field
+          TextField(
+            controller: _commentController,
+            maxLines: 3,
+            style: TextStyle(color: textColor, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Tell us what you liked or how we can improve (optional)...',
+              hintStyle: TextStyle(color: subColor.withValues(alpha: 0.7), fontSize: 12),
+              filled: true,
+              fillColor: isDark ? AppColors.darkBackground.withValues(alpha: 0.5) : Colors.grey[50],
+              contentPadding: const EdgeInsets.all(16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: isDark ? AppColors.darkDivider : AppColors.divider),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: (isDark ? AppColors.darkDivider : AppColors.divider).withValues(alpha: 0.5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _submitFeedback,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 1,
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                    )
+                  : const Text(
+                      'Submit Feedback',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95), duration: 400.ms);
   }
 }

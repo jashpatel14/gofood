@@ -40,12 +40,12 @@ class OrderState {
 
 class OrderNotifier extends StateNotifier<OrderState> {
   OrderNotifier() : super(const OrderState()) {
-    _loadOrders();
+    loadOrders();
   }
 
   final _orderApi = OrderApi();
 
-  Future<void> _loadOrders() async {
+  Future<void> loadOrders() async {
     state = state.copyWith(isLoading: true);
     try {
       final orders = await _orderApi.getOrders();
@@ -64,6 +64,8 @@ class OrderNotifier extends StateNotifier<OrderState> {
     required double totalAmount,
     required String paymentMethod,
     required String deliveryAddress,
+    String? restaurantId,
+    String? restaurantName,
   }) async {
     state = state.copyWith(isLoading: true);
 
@@ -100,10 +102,88 @@ class OrderNotifier extends StateNotifier<OrderState> {
       deliveryAddress: deliveryAddress,
       createdAt: DateTime.now(),
       estimatedDelivery: '30-40 min',
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
     );
 
     state = OrderState(orders: [order, ...state.orders]);
     return order;
+  }
+
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    try {
+      await _orderApi.updateOrderStatus(orderId, status.name);
+      
+      final updatedOrders = state.orders.map((o) {
+        if (o.id == orderId) {
+          return OrderModel(
+            id: o.id,
+            items: o.items,
+            subtotal: o.subtotal,
+            gst: o.gst,
+            deliveryFee: o.deliveryFee,
+            discount: o.discount,
+            totalAmount: o.totalAmount,
+            status: status,
+            paymentMethod: o.paymentMethod,
+            deliveryAddress: o.deliveryAddress,
+            createdAt: o.createdAt,
+            estimatedDelivery: o.estimatedDelivery,
+            restaurantId: o.restaurantId,
+            restaurantName: o.restaurantName,
+            isRated: o.isRated,
+            userRating: o.userRating,
+            userComment: o.userComment,
+          );
+        }
+        return o;
+      }).toList();
+      
+      state = state.copyWith(orders: updatedOrders);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to update order status');
+      throw Exception('Failed to update status: $e');
+    }
+  }
+
+  void markOrderAsRated(String orderId, double rating, String comment) {
+    final updatedOrders = state.orders.map((o) {
+      if (o.id == orderId) {
+        return OrderModel(
+          id: o.id,
+          items: o.items,
+          subtotal: o.subtotal,
+          gst: o.gst,
+          deliveryFee: o.deliveryFee,
+          discount: o.discount,
+          totalAmount: o.totalAmount,
+          status: o.status,
+          paymentMethod: o.paymentMethod,
+          deliveryAddress: o.deliveryAddress,
+          createdAt: o.createdAt,
+          estimatedDelivery: o.estimatedDelivery,
+          restaurantId: o.restaurantId,
+          restaurantName: o.restaurantName,
+          isRated: true,
+          userRating: rating,
+          userComment: comment,
+        );
+      }
+      return o;
+    }).toList();
+    state = state.copyWith(orders: updatedOrders);
+  }
+
+  Future<void> refreshOrder(String orderId) async {
+    try {
+      final updatedOrder = await _orderApi.getOrderById(orderId);
+      final updatedOrders = state.orders.map((o) {
+        return o.id == orderId ? updatedOrder : o;
+      }).toList();
+      state = state.copyWith(orders: updatedOrders);
+    } catch (e) {
+      print("Failed to refresh order $orderId: $e");
+    }
   }
 
   OrderModel? getOrderById(String id) {

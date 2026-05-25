@@ -7,10 +7,59 @@ const auth = require('../middleware/auth');
 const { sendResetEmail } = require('../services/email_service');
 const router = express.Router();
 
+// Ensure role column exists in users table and seed default admin/partners
+(async () => {
+  try {
+    const [columns] = await db.query("SHOW COLUMNS FROM users LIKE 'role'");
+    if (columns.length === 0) {
+      await db.query("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'");
+      console.log("Successfully migrated 'users' table: added 'role' column");
+    }
+
+    // Seed default administrator if not exists
+    const [existing] = await db.query("SELECT id FROM users WHERE email = 'admin@gofood.com'");
+    if (existing.length === 0) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await db.query(
+        "INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+        ['System Administrator', 'admin@gofood.com', '9999999999', hashedPassword, 'admin']
+      );
+      console.log("Successfully seeded default Admin account: admin@gofood.com / admin123");
+    }
+
+    // Seed default partner logins associated with existing seeded restaurants
+    const seedPartner = async (name, email, password, restaurantId) => {
+      const [existingPartner] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
+      let partnerId;
+      if (existingPartner.length === 0) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [result] = await db.query(
+          "INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+          [name, email, '9876543210', hashedPassword, 'partner']
+        );
+        partnerId = result.insertId;
+        console.log(`Successfully seeded partner account: ${email} / ${password}`);
+      } else {
+        partnerId = existingPartner[0].id;
+      }
+      
+      // Associate partner with the restaurant if owner_id is not already set
+      await db.query("UPDATE restaurants SET owner_id = ? WHERE id = ? AND owner_id IS NULL", [partnerId, restaurantId]);
+    };
+
+    await seedPartner('Royal Biryani Owner', 'royal@gofood.com', 'royal123', 1);
+    await seedPartner('Pizza Paradise Owner', 'pizza@gofood.com', 'pizza123', 2);
+    await seedPartner('Burger Junction Owner', 'burger@gofood.com', 'burger123', 4);
+
+  } catch (e) {
+    console.error('Failed to migrate users table and seed admin/partners:', e);
+  }
+})();
+
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, role } = req.body;
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -19,13 +68,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    const assignedRole = role || 'customer';
     const [result] = await db.query(
-      'INSERT INTO users (name, email, phone, password_hash) VALUES (?, ?, ?, ?)',
-      [name, email, phone, hashedPassword]
+      'INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)',
+      [name, email, phone, hashedPassword, assignedRole]
     );
     const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.status(201).json({
-      id: result.insertId, name, email, phone, avatar_url: '', token
+      id: result.insertId, name, email, phone, avatar_url: '', role: assignedRole, token
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -51,7 +101,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({
       id: user.id, name: user.name, email: user.email, phone: user.phone,
-      avatar_url: user.avatar_url || '', token
+      avatar_url: user.avatar_url || '', role: user.role || 'customer', token
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -163,6 +213,20 @@ router.post('/reset-password', async (req, res) => {
     await db.query('UPDATE password_reset_tokens SET expires_at = NOW() WHERE user_id = ?', [userId]);
 
     res.json({ message: 'Password has been reset successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all registered partner users (for Admin dashboard restaurant assignment)
+router.get('/partners', auth, async (req, res) => {
+  try {
+    const [users] = await db.query('SELECT role FROM users WHERE id = ?', [req.userId]);
+    if (users.length === 0 || users[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Only administrators can fetch partner accounts.' });
+    }
+    const [partners] = await db.query("SELECT id, name, email FROM users WHERE role = 'partner' ORDER BY name ASC");
+    res.json(partners);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -20,4 +20,13 @@ class RestaurantApi {
     final List data = response.data;
     return data.map((json) => RestaurantModel.fromJson(json)).toList();
   }
+
+  Future<Map<String, dynamic>> submitReview(String restaurantId, double rating, String comment, String orderId) async {
+    final response = await _dio.post('/restaurants/$restaurantId/reviews', data: {
+      'rating': rating,
+      'comment': comment,
+      'order_id': orderId,
+    });
+    return response.data;
+  }
 }

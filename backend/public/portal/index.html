@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoFood Partner & Admin Dashboard</title>
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+  
+  <!-- System Alert Toast -->
+  <div id="toast" class="toast hidden">
+    <span class="material-icons-round" id="toast-icon">info</span>
+    <span id="toast-msg">Notification Message</span>
+  </div>
+
+  <!-- Main Portal Layout -->
+  <div id="app">
+    
+    <!-- HEADER BAR -->
+    <header class="app-header hidden" id="main-header">
+      <div class="header-logo">
+        <span class="logo-icon">🍔</span>
+        <h1>GoFood <span class="logo-badge" id="role-badge">Partner</span></h1>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Live Connection Pulse Indicator -->
+        <div class="status-pulse-container" title="System Connection Status: Operational">
+          <span class="status-pulse-light"></span>
+          <span class="status-pulse-text">Server Connected</span>
+        </div>
+        
+        <div class="profile-container">
+          <span class="material-icons-round">account_circle</span>
+          <div class="profile-details">
+            <span class="profile-name" id="user-name">Owner Name</span>
+            <span class="profile-subtext" id="user-email">owner@gofood.com</span>
+          </div>
+        </div>
+        
+        <button class="logout-btn" id="logout-trigger" title="Log Out">
+          <span class="material-icons-round">logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- AUTHENTICATION CARD SECTION -->
+    <section class="auth-section" id="auth-container">
+      <div class="auth-card glass">
+        <div class="auth-header">
+          <span class="auth-logo">🍔</span>
+          <h2>GoFood Portal</h2>
+          <p id="auth-subtitle">Log in to manage your restaurant listings and active orders.</p>
+        </div>
+        
+        <!-- Toggle auth screens -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login">Sign In</button>
+          <button class="auth-tab" id="tab-register">Register Partner</button>
+        </div>
+
+        <form id="auth-form" class="auth-form">
+          <div class="input-group" id="group-name" style="display: none;">
+            <label for="name"><span class="material-icons-round">person</span> Full Name</label>
+            <input type="text" id="auth-name" placeholder="John Doe">
+          </div>
+          
+          <div class="input-group">
+            <label for="email"><span class="material-icons-round">email</span> Email Address</label>
+            <input type="email" id="auth-email" required placeholder="owner@gofood.com">
+          </div>
+          
+          <div class="input-group" id="group-phone" style="display: none;">
+            <label for="phone"><span class="material-icons-round">phone</span> Phone Number</label>
+            <input type="tel" id="auth-phone" placeholder="9876543210">
+          </div>
+          
+          <div class="input-group">
+            <label for="password"><span class="material-icons-round">lock</span> Password</label>
+            <input type="password" id="auth-password" required placeholder="••••••••">
+          </div>
+          
+          <button type="submit" class="submit-btn" id="auth-submit">Sign In</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PARTNER DASHBOARD WORKSPACE -->
+    <main class="dashboard-workspace hidden" id="partner-workspace">
+      
+      <!-- Metrics Bar -->
+      <section class="metrics-grid">
+        <div class="metric-card glass">
+          <div class="metric-icon money">₹</div>
+          <div class="metric-info">
+            <h3>Total Revenue</h3>
+            <p id="metric-revenue">₹0.00</p>
+          </div>
+        </div>
+        
+        <div class="metric-card glass">
+          <div class="metric-icon orders"><span class="material-icons-round">shopping_bag</span></div>
+          <div class="metric-info">
+            <h3>Completed Orders</h3>
+            <p id="metric-orders">0</p>
+          </div>
+        </div>
+        
+        <div class="metric-card glass">
+          <div class="metric-icon rating"><span class="material-icons-round">star</span></div>
+          <div class="metric-info">
+            <h3>Restaurant Rating</h3>
+            <p id="metric-rating">0.0</p>
+          </div>
+        </div>
+
+        <div class="metric-card glass status-toggle">
+          <div class="metric-icon store"><span class="material-icons-round">storefront</span></div>
+          <div class="metric-info">
+            <h3>Outlet Status</h3>
+            <div class="toggle-container">
+              <span id="outlet-status-label" class="status-tag live">Accepting Orders</span>
+              <button id="toggle-busy-btn" class="status-action-btn">Set Busy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two-Column Control Panel -->
+      <div class="panel-layout">
+        
+        <!-- COLUMN 1: LIVE ORDERS PANEL -->
+        <section class="live-orders-panel glass">
+          <div class="panel-header">
+            <h2>Live Order Processing</h2>
+            <div class="live-pulse-light animate-pulse"></div>
+          </div>
+          
+          <!-- Live Orders List Container -->
+          <div class="orders-list" id="orders-list-container">
+            <!-- Empty state fallback -->
+            <div class="empty-state">
+              <span class="material-icons-round empty-icon">receipt_long</span>
+              <h4>No active orders</h4>
+              <p>Incoming orders will appear here automatically.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- COLUMN 2: MENU MANAGER PANEL -->
+        <section class="menu-manager-panel glass">
+          <div class="panel-header">
+            <h2>Menu Catalog</h2>
+            <button class="add-dish-btn" id="open-add-dish-modal">
+              <span class="material-icons-round">add</span> Add Dish
+            </button>
+          </div>
+
+          <!-- Dishes Menu Grid -->
+          <div class="dishes-grid" id="dishes-grid-container">
+            <!-- Menu items loaded dynamically -->
+          </div>
+        </section>
+        
+      </div>
+    </main>
+
+    <!-- ADMIN GLOBAL WORKSPACE -->
+    <main class="dashboard-workspace hidden" id="admin-workspace">
+      <section class="metrics-grid">
+        <div class="metric-card glass">
+          <div class="metric-icon orders"><span class="material-icons-round">storefront</span></div>
+          <div class="metric-info">
+            <h3>Active Restaurants</h3>
+            <p id="admin-metric-rests">0</p>
+          </div>
+        </div>
+        
+        <div class="metric-card glass">
+          <div class="metric-icon rating"><span class="material-icons-round">supervised_user_circle</span></div>
+          <div class="metric-info">
+            <h3>Registered Partners</h3>
+            <p id="admin-metric-partners">0</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="admin-grid-layout">
+        
+        <!-- Onboard New Restaurant -->
+        <section class="admin-card glass">
+          <div class="panel-header">
+            <h2>Onboard New Restaurant</h2>
+          </div>
+          
+          <form class="onboard-form" id="onboard-restaurant-form">
+            <div class="form-row">
+              <div class="input-group">
+                <label for="rest-name">Restaurant Name</label>
+                <input type="text" id="rest-name" required placeholder="Royal Biryani House">
+              </div>
+              <div class="input-group">
+                <label for="rest-cuisines">Cuisines (comma separated)</label>
+                <input type="text" id="rest-cuisines" required placeholder="Biryani, North Indian">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="input-group">
+                <label for="rest-image">Cover Photo Image URL</label>
+                <input type="url" id="rest-image" required placeholder="https://images.unsplash.com/...w=600">
+              </div>
+              <div class="input-group">
+                <label for="rest-address">Detailed Address</label>
+                <input type="text" id="rest-address" required placeholder="MG Road, Bangalore">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="input-group">
+                <label for="rest-distance">Simulated Distance (km)</label>
+                <input type="number" step="0.1" id="rest-distance" required placeholder="2.5">
+              </div>
+              <div class="input-group">
+                <label for="rest-delivery">Delivery Fee (₹)</label>
+                <input type="number" id="rest-delivery" required placeholder="40">
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="rest-owner">Assign Owner (Select registered partner account)</label>
+              <select id="rest-owner-select" required>
+                <option value="">-- Choose Partner Account --</option>
+              </select>
+            </div>
+            
+            <button type="submit" class="submit-btn onboard-submit">Onboard Outlet</button>
+          </form>
+        </section>
+
+        <!-- Registered Listings Grid -->
+        <section class="admin-card glass">
+          <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+            <h2>Active Outlet Directory</h2>
+            <div class="input-group" style="margin: 0; max-width: 240px; flex-direction: row; align-items: center; border: 1px solid var(--border-glass); border-radius: 20px; padding: 4px 12px; background: var(--bg-surface-elevated);">
+              <span class="material-icons-round" style="color: var(--text-muted); font-size: 18px;">search</span>
+              <input type="text" id="admin-search-input" placeholder="Search outlets..." style="background: transparent; border: none; padding: 2px 6px; font-size: 12px; color: var(--text-primary); outline: none; width: 100%; height: auto;">
+            </div>
+          </div>
+          <div class="listings-table-container">
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Restaurant ID</th>
+                  <th>Cover</th>
+                  <th>Outlet Name</th>
+                  <th>Cuisines</th>
+                  <th>Ratings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="listings-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- MODAL POPUP FOR DISHES ONBOARDING -->
+    <div class="modal-backdrop hidden" id="dish-modal">
+      <div class="modal-card glass">
+        <div class="modal-header">
+          <h2 id="dish-modal-title">Add New Food Dish</h2>
+          <button class="close-modal-btn" id="close-dish-modal">
+            <span class="material-icons-round">close</span>
+          </button>
+        </div>
+        
+        <form id="dish-form" class="dish-form">
+          <input type="hidden" id="dish-id">
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label for="dish-name">Dish Name</label>
+              <input type="text" id="dish-name" required placeholder="Paneer Tikka Roll">
+            </div>
+            <div class="input-group">
+              <label for="dish-category">Category</label>
+              <input type="text" id="dish-category" required placeholder="Wraps & Rolls">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label for="dish-price">Price (₹)</label>
+              <input type="number" id="dish-price" required placeholder="180">
+            </div>
+            <div class="input-group inline-toggle">
+              <label for="dish-veg">Veg Choice</label>
+              <div class="veg-toggle-choice">
+                <input type="checkbox" id="dish-veg" checked>
+                <span class="veg-choice-label">Vegetarian</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label for="dish-image">Dish Image URL</label>
+            <input type="url" id="dish-image" required placeholder="https://images.unsplash.com/...w=600">
+          </div>
+          
+          <div class="input-group">
+            <label for="dish-desc">Detailed Description</label>
+            <textarea id="dish-desc" rows="3" placeholder="Soft cottage cheese marinated in tikka spices wrapped in warm flatbread..."></textarea>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" id="cancel-dish-form">Cancel</button>
+            <button type="submit" class="submit-btn" id="save-dish-btn">Save Dish</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL POPUP FOR RESTAURANT EDITING -->
+    <div class="modal-backdrop hidden" id="rest-modal">
+      <div class="modal-card glass">
+        <div class="modal-header">
+          <h2 id="rest-modal-title">Edit Restaurant Details</h2>
+          <button class="close-modal-btn" id="close-rest-modal">
+            <span class="material-icons-round">close</span>
+          </button>
+        </div>
+        
+        <form id="rest-edit-form" class="dish-form">
+          <input type="hidden" id="edit-rest-id">
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label for="edit-rest-name">Restaurant Name</label>
+              <input type="text" id="edit-rest-name" required placeholder="Royal Biryani House">
+            </div>
+            <div class="input-group">
+              <label for="edit-rest-cuisines">Cuisines (comma separated)</label>
+              <input type="text" id="edit-rest-cuisines" required placeholder="Biryani, North Indian">
+            </div>
+          </div>
+          
+          <div class="form-row" style="margin-top: 12px;">
+            <div class="input-group">
+              <label for="edit-rest-image">Cover Photo Image URL</label>
+              <input type="url" id="edit-rest-image" required placeholder="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600">
+            </div>
+            <div class="input-group">
+              <label for="edit-rest-address">Detailed Address</label>
+              <input type="text" id="edit-rest-address" required placeholder="MG Road, Bangalore">
+            </div>
+          </div>
+          
+          <div class="form-row" style="margin-top: 12px;">
+            <div class="input-group">
+              <label for="edit-rest-distance">Simulated Distance (km)</label>
+              <input type="number" step="0.1" id="edit-rest-distance" required placeholder="2.5">
+            </div>
+            <div class="input-group">
+              <label for="edit-rest-delivery">Delivery Fee (₹)</label>
+              <input type="number" id="edit-rest-delivery" required placeholder="40">
+            </div>
+          </div>
+          
+          <div class="form-row" style="margin-top: 12px; margin-bottom: 12px;">
+            <div class="input-group">
+              <label for="edit-rest-owner">Assign Owner</label>
+              <select id="edit-rest-owner-select" required>
+                <option value="">-- Choose Partner Account --</option>
+              </select>
+            </div>
+            <div class="input-group inline-toggle">
+              <label for="edit-rest-busy">Outlet Status</label>
+              <div class="veg-toggle-choice">
+                <input type="checkbox" id="edit-rest-busy">
+                <span class="veg-choice-label">Set Busy</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" id="cancel-rest-form">Cancel</button>
+            <button type="submit" class="submit-btn" id="save-rest-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
