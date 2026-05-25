@@ -70,46 +70,80 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             // ── Header ──────────────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
               decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -40,
+                      left: -40,
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundColor: Colors.white.withValues(alpha: 0.06),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    Positioned(
+                      bottom: -50,
+                      right: -30,
+                      child: CircleAvatar(
+                        radius: 100,
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Join us and start ordering',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white.withValues(alpha: 0.85),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () => context.pop(),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.25),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Join us and start ordering',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ).animate().fadeIn(duration: 500.ms),
 

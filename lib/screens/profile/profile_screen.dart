@@ -30,17 +30,42 @@ class ProfileScreen extends ConsumerWidget {
             // ── Dynamic Profile Header ───────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
               decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(36),
-                  bottomRight: Radius.circular(36),
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
                 ),
               ),
-              child: Column(
-                children: [
-                  if (isLoggedIn) ...[
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned(
+                      top: -40,
+                      left: -40,
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundColor: Colors.white.withValues(alpha: 0.06),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: -50,
+                      right: -30,
+                      child: CircleAvatar(
+                        radius: 100,
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
+                      child: Column(
+                        children: [
+                          if (isLoggedIn) ...[
                     // Logged in user details
                     Container(
                       padding: const EdgeInsets.all(4),
@@ -112,6 +137,10 @@ class ProfileScreen extends ConsumerWidget {
                     ).animate().fadeIn(delay: 200.ms),
                   ],
                 ],
+              ),
+            ),
+                  ],
+                ),
               ),
             ),
 

@@ -159,8 +159,8 @@ router.post('/reset-password', async (req, res) => {
     // Update user password
     await db.query('UPDATE users SET password_hash = ? WHERE id = ?', [hashedPassword, userId]);
 
-    // Delete token
-    await db.query('DELETE FROM password_reset_tokens WHERE user_id = ?', [userId]);
+    // Update token to be expired/used (preserves entry in database for audit logs)
+    await db.query('UPDATE password_reset_tokens SET expires_at = NOW() WHERE user_id = ?', [userId]);
 
     res.json({ message: 'Password has been reset successfully' });
   } catch (err) {

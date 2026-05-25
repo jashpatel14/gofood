@@ -140,7 +140,6 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
             child: Text('Menu (${foods.length} items)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor))),
         ),
 
-        // Food List
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(delegate: SliverChildBuilderDelegate((ctx, i) {
@@ -148,30 +147,83 @@ class _RestaurantDetailsScreenState extends ConsumerState<RestaurantDetailsScree
             return GestureDetector(
               onTap: () => context.push('/food-details/${food.id}'),
               child: Container(
-                margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(18), boxShadow: isDark ? null : AppColors.cardShadow),
-                child: Row(children: [
-                  NetworkImageWidget(imageUrl: food.image, width: 100, height: 100, borderRadius: 14),
-                  const SizedBox(width: 14),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Container(padding: const EdgeInsets.all(2), decoration: BoxDecoration(border: Border.all(color: food.isVeg ? AppColors.success : AppColors.error, width: 1.5), borderRadius: BorderRadius.circular(4)),
-                        child: Container(width: 8, height: 8, decoration: BoxDecoration(color: food.isVeg ? AppColors.success : AppColors.error, shape: BoxShape.circle))),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text(food.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                    ]),
-                    const SizedBox(height: 4),
-                    Text(food.description, style: TextStyle(fontSize: 12, color: subColor), maxLines: 2, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 10),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text('₹${food.price.toInt()}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
-                      CartCounterButton(
-                        food: food,
-                        isDisabled: restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed,
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                decoration: BoxDecoration(
+                  color: cardColor, 
+                  borderRadius: BorderRadius.circular(24), 
+                  boxShadow: isDark ? null : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: isDark ? AppColors.darkDivider : AppColors.divider.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Container(padding: const EdgeInsets.all(2), decoration: BoxDecoration(border: Border.all(color: food.isVeg ? AppColors.success : AppColors.error, width: 1.5), borderRadius: BorderRadius.circular(4)),
+                              child: Container(width: 8, height: 8, decoration: BoxDecoration(color: food.isVeg ? AppColors.success : AppColors.error, shape: BoxShape.circle))),
+                            const SizedBox(width: 8),
+                            if (food.rating > 4.2) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
+                                child: const Row(children: [
+                                  Icon(Icons.star, size: 10, color: Colors.amber),
+                                  SizedBox(width: 2),
+                                  Text('Bestseller', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.orange)),
+                                ]),
+                              ),
+                            ],
+                          ]),
+                          const SizedBox(height: 10),
+                          Text(food.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: textColor, letterSpacing: -0.2), maxLines: 2, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 6),
+                          Text('₹${food.price.toInt()}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                          const SizedBox(height: 8),
+                          Text(food.description, style: TextStyle(fontSize: 12, color: subColor, height: 1.4), maxLines: 3, overflow: TextOverflow.ellipsis),
+                        ],
                       ),
-                    ]),
-                  ])),
-                ]),
+                    ),
+                    const SizedBox(width: 16),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        NetworkImageWidget(imageUrl: food.image, width: 110, height: 110, borderRadius: 18),
+                        Positioned(
+                          bottom: -12,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: CartCounterButton(
+                              food: food,
+                              isDisabled: restaurant.status == RestaurantStatus.closed || restaurant.status == RestaurantStatus.temporarilyClosed,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ).animate().fadeIn(delay: (i * 80).ms, duration: 350.ms);
           }, childCount: foods.length)),

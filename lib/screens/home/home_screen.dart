@@ -474,15 +474,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: GestureDetector(
                 onTap: () => context.push('/search'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16), boxShadow: isDark ? null : AppColors.cardShadow),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.divider, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Row(children: [
-                    Icon(Icons.search_rounded, color: AppColors.primary.withValues(alpha: 0.7), size: 24),
+                    const Icon(Icons.search_rounded, color: AppColors.primary, size: 24),
                     const SizedBox(width: 12),
-                    Text('Search food or restaurant...', style: TextStyle(fontSize: 14, color: subColor)),
+                    Text('Search food or restaurant...', style: TextStyle(fontSize: 14, color: subColor, fontWeight: FontWeight.w400)),
                     const Spacer(),
-                    Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.tune_rounded, color: AppColors.primary, size: 18)),
+                    Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                      child: const Icon(Icons.tune_rounded, color: AppColors.primary, size: 16)),
                   ]),
                 ),
               ),
@@ -524,7 +535,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Categories
             _sectionHeader('Categories', 'See All', textColor),
             const SizedBox(height: 16),
-            SizedBox(height: 100, child: ListView.builder(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: MockData.categories.length,
+            SizedBox(height: 106, child: ListView.builder(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: MockData.categories.length,
               itemBuilder: (ctx, i) {
                 final c = MockData.categories[i];
                 return GestureDetector(
@@ -534,9 +545,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 6), 
                     child: Column(
                       children: [
-                        Container(width: 60, height: 60, decoration: BoxDecoration(gradient: LinearGradient(colors: [AppColors.primary.withValues(alpha: 0.1), AppColors.primary.withValues(alpha: 0.05)]), borderRadius: BorderRadius.circular(18)),
-                          child: Icon(c.icon, color: AppColors.primary, size: 28)),
-                        const SizedBox(height: 8),
+                        Container(width: 60, height: 60, decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: isDark 
+                              ? [AppColors.primary.withValues(alpha: 0.15), AppColors.primary.withValues(alpha: 0.05)]
+                              : [AppColors.primarySurface, const Color(0xFFFFF7F2)],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Icon(c.icon, color: AppColors.primary, size: 28)),
+                        const SizedBox(height: 10),
                         Text(c.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis),
                       ],
                     ),
@@ -558,24 +585,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final displayDeliveryTime = r.status == RestaurantStatus.busy ? '${r.deliveryTime} (+15m busy)' : r.deliveryTime;
 
                 return GestureDetector(onTap: () => context.push('/restaurant/${r.id}'),
-                  child: Container(margin: const EdgeInsets.only(bottom: 18), decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(22), boxShadow: isDark ? null : AppColors.cardShadow),
+                  child: Container(margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(24), boxShadow: isDark ? null : AppColors.cardShadow),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Stack(children: [
-                        NetworkImageWidget(imageUrl: r.image, height: 170, width: double.infinity, borderRadius: 22),
-                        Positioned(top: 12, right: 12, child: RatingBadge(rating: r.rating)),
-                        Positioned(bottom: 12, left: 12, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.timer_outlined, size: 14, color: AppColors.primary), const SizedBox(width: 4),
-                            Text(displayDeliveryTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black.withValues(alpha: 0.85)))]))),
+                        NetworkImageWidget(imageUrl: r.image, height: 180, width: double.infinity, borderRadius: 24),
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.25)],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(top: 14, right: 14, child: RatingBadge(rating: r.rating)),
+                        Positioned(bottom: 14, left: 14, child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(
+                          color: Colors.white, 
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.timer_outlined, size: 15, color: AppColors.primary), const SizedBox(width: 6),
+                            Text(displayDeliveryTime, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.black))]))),
                       ]),
-                      Padding(padding: const EdgeInsets.fromLTRB(16, 14, 16, 14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Padding(padding: const EdgeInsets.fromLTRB(18, 16, 18, 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Expanded(child: Text(r.name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: textColor))),
+                          Expanded(child: Text(r.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor, letterSpacing: -0.2))),
                           const SizedBox(width: 8),
                           RestaurantStatusBadge(status: r.status),
                         ]),
                         const SizedBox(height: 6),
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Expanded(child: Text(r.cuisineType, style: TextStyle(fontSize: 13, color: subColor), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                          Expanded(child: Text(r.cuisineType, style: TextStyle(fontSize: 13, color: subColor, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis)),
                           Text(
                             r.status == RestaurantStatus.closed
                                 ? 'Opens at ${RestaurantStatusService.formatTimeTo12Hour(r.openTime)}'

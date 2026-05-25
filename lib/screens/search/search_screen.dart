@@ -59,10 +59,31 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
-        title: TextField(controller: _controller, autofocus: true, onChanged: _onSearch,
-          style: TextStyle(color: textColor, fontSize: 16),
-          decoration: InputDecoration(hintText: 'Search food, restaurants...', hintStyle: TextStyle(color: subColor),
-            border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none)),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.background,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark ? AppColors.darkDivider : AppColors.divider,
+              width: 1,
+            ),
+          ),
+          child: TextField(
+            controller: _controller, 
+            autofocus: true, 
+            onChanged: _onSearch,
+            style: TextStyle(color: textColor, fontSize: 15),
+            decoration: InputDecoration(
+              hintText: 'Search food, restaurants...', 
+              hintStyle: TextStyle(color: subColor, fontSize: 14),
+              border: InputBorder.none, 
+              enabledBorder: InputBorder.none, 
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+          ),
+        ),
         actions: [
           if (_controller.text.isNotEmpty) IconButton(onPressed: () { _controller.clear(); _onSearch(''); }, icon: const Icon(Icons.close)),
         ],

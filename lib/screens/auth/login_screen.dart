@@ -65,49 +65,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // ── Header ──────────────────────────────────
             Container(
               width: double.infinity,
-              height: size.height * 0.35,
+              height: size.height * 0.36,
               decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 30),
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(22),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(48),
+                  bottomRight: Radius.circular(48),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned(
+                      top: -50,
+                      left: -50,
+                      child: CircleAvatar(
+                        radius: 90,
+                        backgroundColor: Colors.white.withValues(alpha: 0.06),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.fastfood_rounded,
-                      size: 44,
-                      color: Colors.white,
+                    Positioned(
+                      bottom: -60,
+                      right: -30,
+                      child: CircleAvatar(
+                        radius: 110,
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    Positioned(
+                      top: 40,
+                      right: 20,
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Sign in to continue ordering',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white.withValues(alpha: 0.85),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 30),
+                        Container(
+                          width: 84,
+                          height: 84,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.fastfood_rounded,
+                            size: 46,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Welcome Back',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign in to continue ordering',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.1, end: 0),
 
