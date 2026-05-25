@@ -100,7 +100,10 @@ class AppRouter {
       GoRoute(
         path: '/order-success',
         name: 'order-success',
-        builder: (context, state) => const OrderSuccessScreen(),
+        builder: (context, state) {
+          final order = state.extra as OrderModel?;
+          return OrderSuccessScreen(order: order);
+        },
       ),
       GoRoute(
         path: '/order-tracking/:id',

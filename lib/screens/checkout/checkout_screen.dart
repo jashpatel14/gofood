@@ -47,7 +47,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
-    await ref.read(orderProvider.notifier).placeOrder(
+    final order = await ref.read(orderProvider.notifier).placeOrder(
       items: items, subtotal: cart.subtotal, gst: cart.gst, deliveryFee: cart.deliveryFee,
       discount: cart.discount, totalAmount: cart.total,
       paymentMethod: _paymentMethods[_selectedPayment]['title'] as String,
@@ -57,7 +57,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
 
     ref.read(cartProvider.notifier).clearCart();
-    if (mounted) context.pushReplacement('/order-success');
+    if (mounted) context.pushReplacement('/order-success', extra: order);
   }
 
   void _showAddressSelectionBottomSheet(BuildContext context, List<AddressModel> addresses) {

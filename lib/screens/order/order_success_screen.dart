@@ -3,10 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/order_model.dart';
 import '../../widgets/custom_button.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
-  const OrderSuccessScreen({super.key});
+  final OrderModel? order;
+  const OrderSuccessScreen({super.key, this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +38,16 @@ class OrderSuccessScreen extends StatelessWidget {
               const Text('Estimated delivery: 30-40 min', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 14)),
             ])).animate().fadeIn(delay: 800.ms, duration: 500.ms),
           const Spacer(),
-          CustomButton(text: 'Track Order', icon: Icons.local_shipping_outlined, onPressed: () => context.go('/navigation'))
-            .animate().fadeIn(delay: 1000.ms, duration: 400.ms),
+          CustomButton(
+            text: 'Track Order', 
+            icon: Icons.local_shipping_outlined, 
+            onPressed: () {
+              context.go('/navigation');
+              if (order != null) {
+                context.push('/order-details', extra: order);
+              }
+            },
+          ).animate().fadeIn(delay: 1000.ms, duration: 400.ms),
           const SizedBox(height: 14),
           CustomButton(text: 'Back to Home', isOutlined: true, onPressed: () => context.go('/navigation'))
             .animate().fadeIn(delay: 1100.ms, duration: 400.ms),
