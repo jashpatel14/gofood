@@ -96,7 +96,7 @@ router.post('/', auth, async (req, res) => {
 // Edit restaurant details
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, cuisine_type, image, address, distance, delivery_fee, owner_id } = req.body;
+    const { name, cuisine_type, image, address, distance, delivery_fee, owner_id, open_time, close_time, is_temporarily_closed, is_open, is_busy } = req.body;
     const restaurantId = req.params.id;
     
     const [existing] = await db.query('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
@@ -111,7 +111,10 @@ router.put('/:id', auth, async (req, res) => {
     }
     
     await db.query(
-      'UPDATE restaurants SET name = ?, cuisine_type = ?, image = ?, address = ?, distance = ?, delivery_fee = ?, owner_id = ? WHERE id = ?',
+      `UPDATE restaurants 
+       SET name = ?, cuisine_type = ?, image = ?, address = ?, distance = ?, delivery_fee = ?, owner_id = ?, 
+           open_time = ?, close_time = ?, is_temporarily_closed = ?, is_open = ?, is_busy = ? 
+       WHERE id = ?`,
       [
         name || rest.name,
         cuisine_type || rest.cuisine_type,
@@ -120,6 +123,11 @@ router.put('/:id', auth, async (req, res) => {
         distance !== undefined ? distance : rest.distance,
         delivery_fee !== undefined ? delivery_fee : rest.delivery_fee,
         owner_id !== undefined ? owner_id : rest.owner_id,
+        open_time !== undefined ? open_time : rest.open_time,
+        close_time !== undefined ? close_time : rest.close_time,
+        is_temporarily_closed !== undefined ? is_temporarily_closed : rest.is_temporarily_closed,
+        is_open !== undefined ? is_open : rest.is_open,
+        is_busy !== undefined ? is_busy : rest.is_busy,
         restaurantId
       ]
     );

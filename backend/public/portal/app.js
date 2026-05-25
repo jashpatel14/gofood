@@ -241,8 +241,12 @@ async function loadPartnerDashboard() {
     // Populate outlet metrics details
     document.getElementById('metric-rating').textContent = parseFloat(restaurant.rating || 0).toFixed(1);
     
-    // Set busy state toggle label
-    updateOutletBusyToggleState(restaurant.is_busy);
+    // Set Open/Close timings values
+    document.getElementById('outlet-open-time').value = restaurant.open_time || '09:00';
+    document.getElementById('outlet-close-time').value = restaurant.close_time || '22:00';
+    
+    // Set active status console buttons and labels
+    updateOutletConsoleState();
 
     // Initial Load menu items and active orders
     await loadPartnerMenu();
@@ -261,18 +265,33 @@ async function loadPartnerDashboard() {
   }
 }
 
-function updateOutletBusyToggleState(isBusy) {
-  const label = document.getElementById('outlet-status-label');
-  const btn = document.getElementById('toggle-busy-btn');
+function updateOutletConsoleState() {
+  if (!state.restaurant) return;
   
-  if (isBusy === 1 || isBusy === true) {
+  const label = document.getElementById('outlet-status-label');
+  const btnOpen = document.getElementById('set-status-open-btn');
+  const btnBusy = document.getElementById('set-status-busy-btn');
+  const btnClosed = document.getElementById('set-status-closed-btn');
+
+  // Reset active classes
+  btnOpen.classList.remove('active');
+  btnBusy.classList.remove('active');
+  btnClosed.classList.remove('active');
+
+  const rest = state.restaurant;
+
+  if (rest.is_temporarily_closed === 1 || rest.is_temporarily_closed === true || rest.is_open === 0) {
+    label.textContent = 'Temporarily Closed';
+    label.className = 'status-tag closed';
+    btnClosed.classList.add('active');
+  } else if (rest.is_busy === 1 || rest.is_busy === true) {
     label.textContent = 'Temporarily Busy';
     label.className = 'status-tag busy';
-    btn.textContent = 'Set Accepting';
+    btnBusy.classList.add('active');
   } else {
     label.textContent = 'Accepting Orders';
     label.className = 'status-tag live';
-    btn.textContent = 'Set Busy';
+    btnOpen.classList.add('active');
   }
 }
 
@@ -364,20 +383,68 @@ function renderPartnerOnboardingPanel() {
   };
 }
 
-// Outlet busy toggle action
-document.getElementById('toggle-busy-btn').onclick = async () => {
+// Operational Status Toggles triggers
+async function updateOperationalStatus(isOpen, isBusy, isTempClosed) {
   if (!state.restaurant) return;
-  const newBusyState = state.restaurant.is_busy === 1 ? 0 : 1;
   
   try {
     await fetchAPI(`/restaurants/${state.restaurant.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ is_busy: newBusyState })
+      body: JSON.stringify({
+        is_open: isOpen,
+        is_busy: isBusy,
+        is_temporarily_closed: isTempClosed
+      })
     });
+
+    state.restaurant.is_open = isOpen;
+    state.restaurant.is_busy = isBusy;
+    state.restaurant.is_temporarily_closed = isTempClosed;
     
-    state.restaurant.is_busy = newBusyState;
-    updateOutletBusyToggleState(newBusyState);
-    showToast(`Outlet status successfully set to ${newBusyState ? 'Busy' : 'Accepting Orders'}.`);
+    updateOutletConsoleState();
+    
+    let statusMsg = 'Accepting Orders';
+    if (isTempClosed) statusMsg = 'Temporarily Closed';
+    else if (isBusy) statusMsg = 'Set Busy';
+
+    showToast(`Outlet status successfully set to ${statusMsg}!`);
+  } catch (err) {
+    showToast(err.message, false);
+  }
+}
+
+document.getElementById('set-status-open-btn').onclick = () => {
+  updateOperationalStatus(1, 0, 0);
+};
+
+document.getElementById('set-status-busy-btn').onclick = () => {
+  updateOperationalStatus(1, 1, 0);
+};
+
+document.getElementById('set-status-closed-btn').onclick = () => {
+  updateOperationalStatus(0, 0, 1);
+};
+
+// Timing configs save trigger
+document.getElementById('save-timings-btn').onclick = async () => {
+  if (!state.restaurant) return;
+  
+  const openTime = document.getElementById('outlet-open-time').value;
+  const closeTime = document.getElementById('outlet-close-time').value;
+
+  try {
+    await fetchAPI(`/restaurants/${state.restaurant.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        open_time: openTime,
+        close_time: closeTime
+      })
+    });
+
+    state.restaurant.open_time = openTime;
+    state.restaurant.close_time = closeTime;
+
+    showToast('Store timings saved successfully!');
   } catch (err) {
     showToast(err.message, false);
   }

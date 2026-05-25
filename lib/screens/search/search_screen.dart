@@ -106,14 +106,25 @@ class _SearchScreenState extends State<SearchScreen> {
               if (_restaurants.isNotEmpty) ...[
                 Text('Restaurants', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
                 const SizedBox(height: 12),
-                ...(_restaurants.map((r) => GestureDetector(onTap: () => context.push('/restaurant/${r.id}'),
+                ...(_restaurants.map((r) => GestureDetector(
+                  onTap: () async {
+                    await context.push('/restaurant/${r.id}');
+                    _onSearch(_controller.text);
+                  },
                   child: Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16), boxShadow: isDark ? null : AppColors.cardShadow),
                     child: Row(children: [
                       NetworkImageWidget(imageUrl: r.image, width: 70, height: 70, borderRadius: 14),
                       const SizedBox(width: 14),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(r.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(r.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                            const SizedBox(width: 6),
+                            RestaurantStatusBadge(status: r.status, fontSize: 9),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         Text(r.cuisineType, style: TextStyle(fontSize: 12, color: subColor), maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 6),
@@ -125,7 +136,11 @@ class _SearchScreenState extends State<SearchScreen> {
               if (_foods.isNotEmpty) ...[
                 Text('Food Items', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
                 const SizedBox(height: 12),
-                ...(_foods.map((f) => GestureDetector(onTap: () => context.push('/food-details/${f.id}'),
+                ...(_foods.map((f) => GestureDetector(
+                  onTap: () async {
+                    await context.push('/food-details/${f.id}');
+                    _onSearch(_controller.text);
+                  },
                   child: Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16), boxShadow: isDark ? null : AppColors.cardShadow),
                     child: Row(children: [

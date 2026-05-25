@@ -431,9 +431,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(restaurantListProvider);
+            ref.invalidate(popularFoodsProvider);
+            await ref.read(restaurantListProvider.future);
+          },
+          color: AppColors.primary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -695,7 +702,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ]),
         ),
       ),
-    );
+    ));
   }
 
   Widget _sectionHeader(String title, String action, Color textColor) {

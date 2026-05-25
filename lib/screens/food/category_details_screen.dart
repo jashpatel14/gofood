@@ -278,7 +278,14 @@ class _CategoryDetailsScreenState extends ConsumerState<CategoryDetailsScreen> w
             final f = dishes[i];
             
             return GestureDetector(
-              onTap: () => context.push('/food-details/${f.id}'),
+              onTap: () async {
+                await context.push('/food-details/${f.id}');
+                if (mounted) {
+                  setState(() {
+                    _loadData();
+                  });
+                }
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: cardColor,
@@ -426,7 +433,14 @@ class _CategoryDetailsScreenState extends ConsumerState<CategoryDetailsScreen> w
             final r = restaurants[i];
             
             return GestureDetector(
-              onTap: () => context.push('/restaurant/${r.id}'),
+              onTap: () async {
+                await context.push('/restaurant/${r.id}');
+                if (mounted) {
+                  setState(() {
+                    _loadData();
+                  });
+                }
+              },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
@@ -491,8 +505,11 @@ class _CategoryDetailsScreenState extends ConsumerState<CategoryDetailsScreen> w
                             ),
                           ),
                         ),
-                        if (!r.isOpen)
-                          Positioned(top: 12, left: 12, child: StatusBadge.closed()),
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: RestaurantStatusBadge(status: r.status, fontSize: 10),
+                        ),
                       ],
                     ),
                     Padding(
